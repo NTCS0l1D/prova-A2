@@ -1,13 +1,13 @@
-// components/CustomNavbar.js
+// src/components/Pagina.js
 import React from 'react';
 import { Navbar, Nav, Container } from 'react-bootstrap';
 
-function CustomNavbar() {
+function Pagina() {
   return (
     <Navbar expand="lg" style={navbarStyles.container} variant="dark">
       <Container>
         <Navbar.Brand href="/" style={navbarStyles.brand}>
-          Apoio Microempreendedores
+          Home
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
@@ -40,4 +40,4 @@ const navbarStyles = {
   },
 };
 
-export default CustomNavbar;
+export default Pagina;
