@@ -33,7 +33,7 @@ export default function HomePage() {
       nome: "Fornecedores",
       imagem: "/img/fornecedor.png",
       quantidade: fornecedores.length,
-      link: "/fornecedore"
+      link: "/fornecedor"
     },
     {
       nome: "Pedidos",
