@@ -27,31 +27,31 @@ export default function HomePage() {
       nome: "Clientes",
       imagem: "/img/cliente.png",
       quantidade: clientes.length,
-      link: "/clientes"
+      link: "/cliente"
     },
     {
       nome: "Fornecedores",
       imagem: "/img/fornecedor.png",
       quantidade: fornecedores.length,
-      link: "/fornecedores"
+      link: "/fornecedore"
     },
     {
       nome: "Pedidos",
       imagem: "/img/pedido.png",
       quantidade: pedidos.length,
-      link: "/pedidos"
+      link: "/pedido"
     },
     {
       nome: "Funcionários",
       imagem: "/img/funcionario.png",
       quantidade: funcionarios.length,
-      link: "/funcionarios"
+      link: "/funcionario"
     },
     {
       nome: "Produtos",
       imagem: "/img/produto.png",
       quantidade: produtos.length,
-      link: "/produtos"
+      link: "/produto"
     },
   ];
 
