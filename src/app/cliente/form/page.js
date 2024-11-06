@@ -1,16 +1,28 @@
-'use client'
+// src/app/clientes/form/page.js
+'use client';
 
-import Pagina from '@/components/Pagina';
-import { useState, useEffect } from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { v4 as uuidv4 } from 'uuid';
 import { Button, Col, Form, Row } from 'react-bootstrap';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import Pagina from '@/components/Pagina';
 import apiLocalidades from '@/services/apiLocalidades';
 
 export default function ClienteFormPage() {
+  const router = useRouter();
+  const [clientes, setClientes] = useState([]);
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
 
+  useEffect(() => {
+    // Carrega clientes do localStorage ao montar o componente
+    const clientesSalvos = JSON.parse(localStorage.getItem('clientes')) || [];
+    setClientes(clientesSalvos);
+  }, []);
+
+  // Carrega os estados ao montar o componente
   useEffect(() => {
     const fetchEstados = async () => {
       try {
@@ -23,6 +35,7 @@ export default function ClienteFormPage() {
     fetchEstados();
   }, []);
 
+  // Carrega as cidades ao selecionar um estado
   const fetchCidades = async (estadoId) => {
     try {
       const response = await apiLocalidades.get(`/estados/${estadoId}/municipios`);
@@ -35,38 +48,30 @@ export default function ClienteFormPage() {
   const initialValues = {
     nome: '',
     sobrenome: '',
+    cpf: '',
     email: '',
     telefone: '',
-    estado: '',
+    dataNascimento: '',
     cidade: '',
-    categoria: '',
-    cpfCnpj: '',
-    dataNascimento: ''
+    estado: ''
   };
 
   const validationSchema = Yup.object().shape({
     nome: Yup.string().required("Campo obrigatório"),
     sobrenome: Yup.string().required("Campo obrigatório"),
+    cpf: Yup.string().required("Campo obrigatório"),
     email: Yup.string().email("Email inválido").required("Campo obrigatório"),
     telefone: Yup.string().required("Campo obrigatório"),
-    estado: Yup.string().required("Campo obrigatório"),
+    dataNascimento: Yup.date().required("Campo obrigatório"),
     cidade: Yup.string().required("Campo obrigatório"),
-    categoria: Yup.string().required("Campo obrigatório"),
-    cpfCnpj: Yup.string().required("Campo obrigatório"),
-    dataNascimento: Yup.date().required("Campo obrigatório")
+    estado: Yup.string().required("Campo obrigatório")
   });
 
   function salvarCliente(dados) {
-    // Obter clientes salvos anteriormente do localStorage
-    const clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-
-    // Adicionar o novo cliente à lista
-    clientes.push(dados);
-
-    // Salvar a lista atualizada de clientes no localStorage
-    localStorage.setItem('clientes', JSON.stringify(clientes));
-
-    alert('Cliente salvo com sucesso!');
+    const novosClientes = [...clientes, { ...dados, id: uuidv4() }];
+    localStorage.setItem('clientes', JSON.stringify(novosClientes));
+    alert("Cliente cadastrado com sucesso!");
+    router.push("/cliente"); // Navega para a lista de clientes
   }
 
   return (
@@ -110,6 +115,19 @@ export default function ClienteFormPage() {
 
             <Row className='mb-2'>
               <Form.Group as={Col}>
+                <Form.Label>CPF:</Form.Label>
+                <Form.Control
+                  name='cpf'
+                  type='text'
+                  value={values.cpf}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  isInvalid={touched.cpf && errors.cpf}
+                />
+                <Form.Control.Feedback type='invalid'>{errors.cpf}</Form.Control.Feedback>
+              </Form.Group>
+
+              <Form.Group as={Col}>
                 <Form.Label>Email:</Form.Label>
                 <Form.Control
                   name='email'
@@ -121,7 +139,9 @@ export default function ClienteFormPage() {
                 />
                 <Form.Control.Feedback type='invalid'>{errors.email}</Form.Control.Feedback>
               </Form.Group>
+            </Row>
 
+            <Row className='mb-2'>
               <Form.Group as={Col}>
                 <Form.Label>Telefone:</Form.Label>
                 <Form.Control
@@ -133,21 +153,6 @@ export default function ClienteFormPage() {
                   isInvalid={touched.telefone && errors.telefone}
                 />
                 <Form.Control.Feedback type='invalid'>{errors.telefone}</Form.Control.Feedback>
-              </Form.Group>
-            </Row>
-
-            <Row className='mb-2'>
-              <Form.Group as={Col}>
-                <Form.Label>CPF/CNPJ:</Form.Label>
-                <Form.Control
-                  name='cpfCnpj'
-                  type='text'
-                  value={values.cpfCnpj}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  isInvalid={touched.cpfCnpj && errors.cpfCnpj}
-                />
-                <Form.Control.Feedback type='invalid'>{errors.cpfCnpj}</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group as={Col}>

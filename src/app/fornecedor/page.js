@@ -5,7 +5,7 @@ import Pagina from '@/components/Pagina';
 import { useEffect, useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { useRouter } from 'next/navigation';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaPen, FaTrash } from 'react-icons/fa';
 
 export default function FornecedoresListPage() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function FornecedoresListPage() {
 
   return (
     <div>
-    <Pagina />
+      <Pagina />
       <h1>Lista de Fornecedores</h1>
       <Button variant="primary" onClick={() => router.push('/fornecedor/form')}>Novo Fornecedor</Button>
       
@@ -42,10 +42,10 @@ export default function FornecedoresListPage() {
             <th>CNPJ</th>
             <th>Email</th>
             <th>Telefone</th>
-            <th>Endereço</th>
             <th>Cidade</th>
             <th>Estado</th>
-            <th>Categoria</th>
+            <th>Produto</th>
+            <th>Prazo de Entrega</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -57,13 +57,13 @@ export default function FornecedoresListPage() {
                 <td>{fornecedor.cnpj}</td>
                 <td>{fornecedor.email}</td>
                 <td>{fornecedor.telefone}</td>
-                <td>{fornecedor.endereco}</td>
                 <td>{fornecedor.cidade}</td>
                 <td>{fornecedor.estado}</td>
-                <td>{fornecedor.categoria}</td>
+                <td>{fornecedor.produto}</td>
+                <td>{fornecedor.prazoEntrega} dias</td>
                 <td>
-                  <Button variant="warning" size="sm" onClick={() => editarFornecedor(fornecedor.id)} className="me-2">
-                    <FaEdit /> {/* Ícone de editar */}
+                <Button className='me-2' href={`fornecedor/form?id=${fornecedor.id}`} variant="warning">
+                    <FaPen />
                   </Button>
                   <Button variant="danger" size="sm" onClick={() => deletarFornecedor(fornecedor.id)}>
                     <FaTrash /> {/* Ícone de deletar */}

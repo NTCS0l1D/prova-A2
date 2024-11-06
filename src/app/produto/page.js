@@ -39,11 +39,11 @@ export default function ProdutosListPage() {
         <thead>
           <tr>
             <th>Código</th>
-            <th>Nome</th>
+            <th>Produto</th>
             <th>Descrição</th>
             <th>Categoria</th>
-            <th>Estoque</th>
             <th>Preço Unitário</th>
+            <th>Quantidade em Estoque</th>
             <th>Fornecedor</th>
             <th>Data de Cadastro</th>
             <th>Ações</th>

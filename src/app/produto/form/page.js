@@ -1,4 +1,3 @@
-// src/app/produtos/form/page.js
 'use client';
 
 import Pagina from '@/components/Pagina';
@@ -12,11 +11,16 @@ import { useEffect, useState } from 'react';
 export default function ProdutoFormPage() {
   const router = useRouter();
   const [produtos, setProdutos] = useState([]);
+  const [fornecedores, setFornecedores] = useState([]);
 
   useEffect(() => {
-    // Carrega produtos do localStorage ao montar o componente
     const produtosSalvos = JSON.parse(localStorage.getItem('produtos')) || [];
+    console.log(produtosSalvos);
     setProdutos(produtosSalvos);
+
+    const fornecedoresSalvos = JSON.parse(localStorage.getItem('fornecedores')) || [];
+    console.log(fornecedoresSalvos);
+    setFornecedores(fornecedoresSalvos);
   }, []);
 
   const initialValues = {
@@ -24,8 +28,10 @@ export default function ProdutoFormPage() {
     nomeProduto: '',
     descricao: '',
     categoria: '',
+    marca: '',
     quantidade: '',
     precoUnitario: '',
+    valorUnitario: '',
     fornecedor: '',
     dataCadastro: ''
   };
@@ -35,8 +41,10 @@ export default function ProdutoFormPage() {
     nomeProduto: Yup.string().required("Campo obrigatório"),
     descricao: Yup.string().required("Campo obrigatório"),
     categoria: Yup.string().required("Campo obrigatório"),
+    marca: Yup.string().required("Campo obrigatório"),
     quantidade: Yup.number().required("Campo obrigatório").positive().integer(),
     precoUnitario: Yup.number().required("Campo obrigatório").positive(),
+    valorUnitario: Yup.number().required("Campo obrigatório").positive(),
     fornecedor: Yup.string().required("Campo obrigatório"),
     dataCadastro: Yup.date().required("Campo obrigatório")
   });
@@ -45,12 +53,12 @@ export default function ProdutoFormPage() {
     const novosProdutos = [...produtos, { ...dados, id: uuidv4() }];
     localStorage.setItem('produtos', JSON.stringify(novosProdutos));
     alert("Produto cadastrado com sucesso!");
-    router.push("/produto"); // Navega para a lista de produtos
+    router.push("/produto");
   }
 
   return (
     <div>
-    <Pagina />
+      <Pagina />
       <h1>Cadastro de Produto</h1>
       <Formik
         initialValues={initialValues}
@@ -74,15 +82,21 @@ export default function ProdutoFormPage() {
               </Form.Group>
 
               <Form.Group as={Col}>
-                <Form.Label>Nome do Produto:</Form.Label>
-                <Form.Control
+                <Form.Label>Produto:</Form.Label>
+                <Form.Select
                   name='nomeProduto'
-                  type='text'
                   value={values.nomeProduto}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   isInvalid={touched.nomeProduto && errors.nomeProduto}
-                />
+                >
+                  <option value="">Selecione o Produto</option>
+                  {produtos.map((produto) => (
+                    <option key={produto.id} value={produto.nomeProduto}>
+                      {produto.nomeProduto}
+                    </option>
+                  ))}
+                </Form.Select>
                 <Form.Control.Feedback type='invalid'>{errors.nomeProduto}</Form.Control.Feedback>
               </Form.Group>
             </Row>
@@ -111,28 +125,16 @@ export default function ProdutoFormPage() {
                   isInvalid={touched.categoria && errors.categoria}
                 >
                   <option value="">Selecione...</option>
-                  <option value="Eletrônicos">Eletrônicos</option>
-                  <option value="Alimentos">Alimentos</option>
-                  <option value="Roupas">Roupas</option>
+                  <option value="Smartphone">Smartphone</option>
+                  <option value="Notebook">Notebook</option>
+                  <option value="Smartwatch">Smartwatch</option>
+                  <option value="Videogame">Videogame</option>
                 </Form.Select>
                 <Form.Control.Feedback type='invalid'>{errors.categoria}</Form.Control.Feedback>
               </Form.Group>
             </Row>
 
             <Row className='mb-2'>
-              <Form.Group as={Col}>
-                <Form.Label>Quantidade em Estoque:</Form.Label>
-                <Form.Control
-                  name='quantidade'
-                  type='number'
-                  value={values.quantidade}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  isInvalid={touched.quantidade && errors.quantidade}
-                />
-                <Form.Control.Feedback type='invalid'>{errors.quantidade}</Form.Control.Feedback>
-              </Form.Group>
-
               <Form.Group as={Col}>
                 <Form.Label>Preço Unitário:</Form.Label>
                 <Form.Control
@@ -146,19 +148,38 @@ export default function ProdutoFormPage() {
                 />
                 <Form.Control.Feedback type='invalid'>{errors.precoUnitario}</Form.Control.Feedback>
               </Form.Group>
+
+              <Form.Group as={Col}>
+                <Form.Label>Quantidade em Estoque:</Form.Label>
+                <Form.Control
+                  name='quantidade'
+                  type='number'
+                  value={values.quantidade}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  isInvalid={touched.quantidade && errors.quantidade}
+                />
+                <Form.Control.Feedback type='invalid'>{errors.quantidade}</Form.Control.Feedback>
+              </Form.Group>
             </Row>
 
             <Row className='mb-2'>
               <Form.Group as={Col}>
                 <Form.Label>Fornecedor:</Form.Label>
-                <Form.Control
+                <Form.Select
                   name='fornecedor'
-                  type='text'
                   value={values.fornecedor}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   isInvalid={touched.fornecedor && errors.fornecedor}
-                />
+                >
+                  <option value="">Selecione o Fornecedor</option>
+                  {fornecedores.map((fornecedor) => (
+                    <option key={fornecedor.id} value={fornecedor.empresa}>
+                      {fornecedor.empresa}
+                    </option>
+                  ))}
+                </Form.Select>
                 <Form.Control.Feedback type='invalid'>{errors.fornecedor}</Form.Control.Feedback>
               </Form.Group>
 

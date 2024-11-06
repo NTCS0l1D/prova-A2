@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { useRouter } from 'next/navigation';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaPen, FaTrash } from 'react-icons/fa';
 import Pagina from '@/components/Pagina';
 
 export default function ClientesListPage() {
@@ -25,9 +25,11 @@ export default function ClientesListPage() {
   };
 
   // Função para redirecionar para a página de edição com os dados do cliente
-  const editarCliente = (id) => {
-    router.push(`/clientes/form/${id}`);
-  };
+  function editarCliente(clienteId) {
+    router.push(`/cliente/form/${clienteId}`);
+  }
+
+  
 
   return (
     <div>
@@ -42,10 +44,10 @@ export default function ClientesListPage() {
             <th>Sobrenome</th>
             <th>Email</th>
             <th>Telefone</th>
-            <th>Endereço</th>
+            <th>CPF</th>
             <th>Cidade</th>
             <th>Estado</th>
-            <th>Categoria</th>
+            <th>Data de Nascimento</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -57,16 +59,16 @@ export default function ClientesListPage() {
                 <td>{cliente.sobrenome}</td>
                 <td>{cliente.email}</td>
                 <td>{cliente.telefone}</td>
-                <td>{cliente.endereco}</td>
+                <td>{cliente.cpf}</td>
                 <td>{cliente.cidade}</td>
                 <td>{cliente.estado}</td>
-                <td>{cliente.categoria}</td>
+                <td>{cliente.dataNascimento}</td>
                 <td>
-                  <Button variant="warning" size="sm" onClick={() => editarCliente(cliente.id)} className="me-2">
-                    <FaEdit /> {/* Ícone de editar */}
+                  <Button className='me-2' href={`cliente/form?id=${cliente.id}`} variant="warning">
+                    <FaPen />
                   </Button>
                   <Button variant="danger" size="sm" onClick={() => deletarCliente(cliente.id)}>
-                    <FaTrash /> {/* Ícone de deletar */}
+                    <FaTrash />
                   </Button>
                 </td>
               </tr>
