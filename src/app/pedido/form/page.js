@@ -4,51 +4,56 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { v4 as uuidv4 } from 'uuid';
 import { Button, Col, Form, Row } from 'react-bootstrap';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Pagina from '@/components/Pagina';
+import InputMask from 'react-input-mask';
 
 export default function PedidoFormPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pedidoId = searchParams ? searchParams.get('id') : null;
+
   const [pedidos, setPedidos] = useState([]);
   const [produtos, setProdutos] = useState([]);
-  const [clientes, setClientes] = useState([]); // Adicionado estado para clientes
-  const [funcionarios, setFuncionarios] = useState([]); // Adicionado estado para funcionários
-
-  useEffect(() => {
-    // Carrega pedidos do localStorage ao montar o componente
-    const pedidosSalvos = JSON.parse(localStorage.getItem('pedidos')) || [];
-    setPedidos(pedidosSalvos);
-    
-    // Carrega produtos (simulação de dados ou fetch de API)
-    const produtosSalvos = JSON.parse(localStorage.getItem('produtos')) || [];
-    setProdutos(produtosSalvos);
-
-    // Carrega clientes do localStorage
-    const clientesSalvos = JSON.parse(localStorage.getItem('clientes')) || [];
-    setClientes(clientesSalvos);
-
-    // Carrega funcionários do localStorage
-    const funcionariosSalvos = JSON.parse(localStorage.getItem('funcionarios')) || [];
-    setFuncionarios(funcionariosSalvos);
-  }, []);
-
-  const initialValues = {
+  const [clientes, setClientes] = useState([]);
+  const [funcionarios, setFuncionarios] = useState([]);
+  const [pedido, setPedido] = useState({
     numeroPedido: '',
     cliente: '',
-    funcionario: '', // Alterado para funcionário
-    dataPedido: '',  // Removido, pois foi substituído por funcionário
+    funcionario: '',
     produto: '',
     quantidade: '',
     precoUnitario: '',
     total: '',
     status: ''
-  };
+  });
+
+  useEffect(() => {
+    const pedidosSalvos = JSON.parse(localStorage.getItem('pedidos')) || [];
+    setPedidos(pedidosSalvos);
+
+    const produtosSalvos = JSON.parse(localStorage.getItem('produtos')) || [];
+    setProdutos(produtosSalvos);
+
+    const clientesSalvos = JSON.parse(localStorage.getItem('clientes')) || [];
+    setClientes(clientesSalvos);
+
+    const funcionariosSalvos = JSON.parse(localStorage.getItem('funcionarios')) || [];
+    setFuncionarios(funcionariosSalvos);
+
+    if (pedidoId) {
+      const pedidoExistente = pedidosSalvos.find(pedido => pedido.id === pedidoId);
+      if (pedidoExistente) {
+        setPedido(pedidoExistente);
+      }
+    }
+  }, [pedidoId]);
 
   const validationSchema = Yup.object().shape({
     numeroPedido: Yup.string().required("Campo obrigatório"),
     cliente: Yup.string().required("Campo obrigatório"),
-    funcionario: Yup.string().required("Campo obrigatório"), // Alterado para funcionário
+    funcionario: Yup.string().required("Campo obrigatório"),
     produto: Yup.string().required("Campo obrigatório"),
     quantidade: Yup.number().required("Campo obrigatório").positive().integer(),
     precoUnitario: Yup.number().required("Campo obrigatório").positive(),
@@ -56,23 +61,37 @@ export default function PedidoFormPage() {
     status: Yup.string().required("Campo obrigatório")
   });
 
+  function formatCurrency(value) {
+    return `R$ ${parseFloat(value).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
+  }
+
   function salvarPedido(dados) {
-    const novosPedidos = [...pedidos, { ...dados, id: uuidv4() }];
+    let novosPedidos = [...pedidos];
+    
+    if (pedidoId) {
+      novosPedidos = pedidos.map(pedido => 
+        pedido.id === pedidoId ? { ...pedido, ...dados } : pedido
+      );
+    } else {
+      novosPedidos.push({ id: uuidv4(), ...dados });
+    }
+
     localStorage.setItem('pedidos', JSON.stringify(novosPedidos));
-    alert("Pedido cadastrado com sucesso!");
-    router.push("/pedido"); // Navega para a lista de pedidos
+    alert("Pedido salvo com sucesso!");
+    router.push("/pedido");
   }
 
   return (
     <div>
       <Pagina />
-      <h1>Cadastro de Pedido</h1>
+      <h1>{pedidoId ? 'Editar' : 'Cadastro'} de Pedido</h1>
       <Formik
-        initialValues={initialValues}
+        initialValues={pedido}
         validationSchema={validationSchema}
         onSubmit={salvarPedido}
+        enableReinitialize
       >
-        {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
+        {({ values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue }) => (
           <Form onSubmit={handleSubmit}>
             <Row className='mb-2'>
               <Form.Group as={Col}>
@@ -131,11 +150,9 @@ export default function PedidoFormPage() {
                   value={values.produto}
                   onChange={e => {
                     handleChange(e);
-                    // Encontra o produto selecionado
                     const produtoSelecionado = produtos.find(produto => produto.id === e.target.value);
-                    // Atualiza o preço unitário com o valor do produto selecionado
                     if (produtoSelecionado) {
-                      handleChange({ target: { name: 'precoUnitario', value: produtoSelecionado.precoUnitario } });
+                      setFieldValue('precoUnitario', produtoSelecionado.precoUnitario);
                     }
                   }}
                   onBlur={handleBlur}
@@ -144,7 +161,7 @@ export default function PedidoFormPage() {
                   <option value="">Selecione...</option>
                   {produtos.map(produto => (
                     <option key={produto.id} value={produto.id}>
-                      {produto.nomeProduto} {/* Exibe o nome do produto */}
+                      {produto.nomeProduto}
                     </option>
                   ))}
                 </Form.Select>
@@ -159,11 +176,11 @@ export default function PedidoFormPage() {
                   name='quantidade'
                   type='number'
                   value={values.quantidade}
-                  onChange={e => {
+                  onChange={(e) => {
                     handleChange(e);
-                    // Calcula o total automaticamente
-                    const total = e.target.value * values.precoUnitario;
-                    handleChange({ target: { name: 'total', value: total } });
+                    const quantidade = parseFloat(e.target.value) || 0;
+                    const precoUnitario = parseFloat(values.precoUnitario) || 0;
+                    setFieldValue('total', quantidade * precoUnitario);
                   }}
                   onBlur={handleBlur}
                   isInvalid={touched.quantidade && errors.quantidade}
@@ -174,11 +191,14 @@ export default function PedidoFormPage() {
               <Form.Group as={Col}>
                 <Form.Label>Preço Unitário:</Form.Label>
                 <Form.Control
-                  name='precoUnitario'
-                  type='number'
-                  step="0.01"
-                  value={values.precoUnitario}
-                  onChange={handleChange}
+                  name="precoUnitario"
+                  type="text"
+                  value={formatCurrency(values.precoUnitario)}
+                  onChange={(e) => {
+                    const precoUnitario = parseFloat(e.target.value.replace("R$ ", "").replace(",", ".")) || 0;
+                    setFieldValue('precoUnitario', precoUnitario);
+                    setFieldValue('total', (values.quantidade || 0) * precoUnitario);
+                  }}
                   onBlur={handleBlur}
                   isInvalid={touched.precoUnitario && errors.precoUnitario}
                 />
@@ -190,21 +210,21 @@ export default function PedidoFormPage() {
               <Form.Group as={Col}>
                 <Form.Label>Total:</Form.Label>
                 <Form.Control
-                  name='total'
-                  type='number'
-                  step="0.01"
-                  value={values.total}
+                  name="total"
+                  type="text"
+                  value={formatCurrency(values.total)}
                   onChange={handleChange}
                   onBlur={handleBlur}
+                  readOnly
                   isInvalid={touched.total && errors.total}
                 />
                 <Form.Control.Feedback type='invalid'>{errors.total}</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group as={Col}>
-                <Form.Label>Status do Pedido:</Form.Label>
+                <Form.Label>Status:</Form.Label>
                 <Form.Select
-                  name='status'
+                  name="status"
                   value={values.status}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -212,15 +232,14 @@ export default function PedidoFormPage() {
                 >
                   <option value="">Selecione...</option>
                   <option value="Pendente">Pendente</option>
-                  <option value="Processando">Processando</option>
-                  <option value="Enviado">Enviado</option>
+                  <option value="Em andamento">Em andamento</option>
                   <option value="Concluído">Concluído</option>
                 </Form.Select>
                 <Form.Control.Feedback type='invalid'>{errors.status}</Form.Control.Feedback>
               </Form.Group>
             </Row>
 
-            <Button variant="primary" type="submit" className='mt-3'>Salvar</Button>
+            <Button type="submit">{pedidoId ? 'Editar' : 'Cadastrar'} Pedido</Button>
           </Form>
         )}
       </Formik>

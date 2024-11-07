@@ -1,19 +1,19 @@
-// src/app/clientes/form/page.js
-'use client';
+'use client'
 
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { v4 as uuidv4 } from 'uuid';
 import { Button, Col, Form, Row } from 'react-bootstrap';
-import { useRouter, useSearchParams } from 'next/navigation'; // Importar useSearchParams
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Pagina from '@/components/Pagina';
 import apiLocalidades from '@/services/apiLocalidades';
+import InputMask from 'react-input-mask'; // Importação do InputMask
 
 export default function ClienteFormPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const clienteId = searchParams.get('id'); // Obtém o ID do cliente da URL
+  const clienteId = searchParams.get('id');
 
   const [clientes, setClientes] = useState([]);
   const [estados, setEstados] = useState([]);
@@ -21,29 +21,26 @@ export default function ClienteFormPage() {
   const [initialValues, setInitialValues] = useState({
     nome: '',
     sobrenome: '',
-    cpf: '',
+    cpf: '',           // Valor inicial vazio com máscara
     email: '',
-    telefone: '',
+    telefone: '',      // Valor inicial vazio com máscara
     dataNascimento: '',
     cidade: '',
     estado: ''
   });
 
   useEffect(() => {
-    // Carrega clientes do localStorage ao montar o componente
     const clientesSalvos = JSON.parse(localStorage.getItem('clientes')) || [];
     setClientes(clientesSalvos);
 
-    // Verifica se existe um ID e carrega os dados do cliente correspondente
     if (clienteId) {
       const clienteExistente = clientesSalvos.find(cliente => cliente.id === clienteId);
       if (clienteExistente) {
-        setInitialValues(clienteExistente); // Define os valores iniciais do cliente
+        setInitialValues(clienteExistente);
       }
     }
   }, [clienteId]);
 
-  // Carrega os estados ao montar o componente
   useEffect(() => {
     const fetchEstados = async () => {
       try {
@@ -56,7 +53,6 @@ export default function ClienteFormPage() {
     fetchEstados();
   }, []);
 
-  // Carrega as cidades ao selecionar um estado
   const fetchCidades = async (estadoId) => {
     try {
       const response = await apiLocalidades.get(`/estados/${estadoId}/municipios`);
@@ -80,16 +76,14 @@ export default function ClienteFormPage() {
   function salvarCliente(dados) {
     let novosClientes;
     if (clienteId) {
-      // Atualiza cliente existente
       novosClientes = clientes.map(cliente => (cliente.id === clienteId ? { ...dados, id: clienteId } : cliente));
     } else {
-      // Adiciona novo cliente
       novosClientes = [...clientes, { ...dados, id: uuidv4() }];
     }
 
     localStorage.setItem('clientes', JSON.stringify(novosClientes));
     alert("Cliente salvo com sucesso!");
-    router.push("/cliente"); // Redireciona para a lista de clientes
+    router.push("/cliente");
   }
 
   return (
@@ -99,7 +93,7 @@ export default function ClienteFormPage() {
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
-        enableReinitialize // Permite que os valores iniciais sejam atualizados quando initialValues mudar
+        enableReinitialize
         onSubmit={salvarCliente}
       >
         {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
@@ -135,14 +129,21 @@ export default function ClienteFormPage() {
             <Row className='mb-2'>
               <Form.Group as={Col}>
                 <Form.Label>CPF:</Form.Label>
-                <Form.Control
-                  name='cpf'
-                  type='text'
+                <InputMask
+                  mask="999.999.999-99"
                   value={values.cpf}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  isInvalid={touched.cpf && errors.cpf}
-                />
+                  defaultValue={initialValues.cpf} // Força a exibição da máscara
+                >
+                  {() => (
+                    <Form.Control
+                      name="cpf"
+                      type="text"
+                      isInvalid={touched.cpf && errors.cpf}
+                    />
+                  )}
+                </InputMask>
                 <Form.Control.Feedback type='invalid'>{errors.cpf}</Form.Control.Feedback>
               </Form.Group>
 
@@ -163,14 +164,21 @@ export default function ClienteFormPage() {
             <Row className='mb-2'>
               <Form.Group as={Col}>
                 <Form.Label>Telefone:</Form.Label>
-                <Form.Control
-                  name='telefone'
-                  type='text'
+                <InputMask
+                  mask="(99) 99999-9999"
                   value={values.telefone}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  isInvalid={touched.telefone && errors.telefone}
-                />
+                  defaultValue={initialValues.telefone} // Força a exibição da máscara
+                >
+                  {() => (
+                    <Form.Control
+                      name="telefone"
+                      type="text"
+                      isInvalid={touched.telefone && errors.telefone}
+                    />
+                  )}
+                </InputMask>
                 <Form.Control.Feedback type='invalid'>{errors.telefone}</Form.Control.Feedback>
               </Form.Group>
 

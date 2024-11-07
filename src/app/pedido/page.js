@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { useRouter } from 'next/navigation';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import { FaPen, FaTrash } from 'react-icons/fa';
 import Pagina from '@/components/Pagina';
 
 export default function PedidosListPage() {
@@ -56,6 +56,11 @@ export default function PedidosListPage() {
     return funcionario ? funcionario.nome : 'Desconhecido'; // Retorna o nome do funcionário ou 'Desconhecido'
   };
 
+  // Função para formatar valores monetários
+  const formatCurrency = (value) => {
+    return `R$ ${parseFloat(value).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
+  };
+
   return (
     <div>
       <Pagina />
@@ -68,7 +73,6 @@ export default function PedidosListPage() {
             <th>Número do Pedido</th>
             <th>Cliente</th>
             <th>Funcionário</th> {/* Nova coluna para o funcionário */}
-            <th>Data</th>
             <th>Produto</th>
             <th>Quantidade</th>
             <th>Preço Unitário</th>
@@ -84,16 +88,18 @@ export default function PedidosListPage() {
                 <td>{pedido.numeroPedido}</td>
                 <td>{getClienteNome(pedido.cliente)}</td> {/* Exibe o nome do cliente */}
                 <td>{getFuncionarioNome(pedido.funcionario)}</td> {/* Exibe o nome do funcionário */}
-                <td>{new Date(pedido.dataPedido).toLocaleDateString()}</td>
                 <td>{getProdutoNome(pedido.produto)}</td> {/* Exibe o nome do produto */}
                 <td>{pedido.quantidade}</td>
-                <td>{pedido.precoUnitario.toFixed(2)}</td>
-                <td>{pedido.total.toFixed(2)}</td>
+                <td>{formatCurrency(pedido.precoUnitario)}</td> {/* Exibe o preço unitário formatado */}
+                <td>{formatCurrency(pedido.total)}</td> {/* Exibe o total formatado */}
                 <td>{pedido.status}</td>
                 <td>
-                  <Button variant="warning" onClick={() => editarPedido(pedido.id)}>
-                    <FaEdit /> {/* Ícone de editar */}
-                  </Button>
+                <Button
+                  className='me-2'
+                  variant="warning"
+                  onClick={() => router.push(`/pedido/form?id=${pedido.id}`)}>
+                  <FaPen />
+                </Button>
                   <Button variant="danger" onClick={() => deletarPedido(pedido.id)}>
                     <FaTrash /> {/* Ícone de deletar */}
                   </Button>

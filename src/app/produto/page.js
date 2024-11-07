@@ -26,12 +26,12 @@ export default function ProdutosListPage() {
 
   // Função para redirecionar para a página de edição com os dados do produto
   const editarProduto = (id) => {
-    router.push(`/produto/form/${id}`);
+    router.push(`/produto/form?id=${id}`);
   };
 
   return (
     <div>
-    <Pagina />
+      <Pagina />
       <h1>Lista de Produtos</h1>
       <Button variant="primary" onClick={() => router.push('/produto/form')}>Novo Produto</Button>
       
@@ -53,18 +53,18 @@ export default function ProdutosListPage() {
           {produtos.length > 0 ? (
             produtos.map((produto) => (
               <tr key={produto.id}>
-                <td>{produto.codigoProduto}</td>
-                <td>{produto.nomeProduto}</td>
-                <td>{produto.descricao}</td>
-                <td>{produto.categoria}</td>
-                <td>{produto.quantidade}</td>
-                <td>{produto.precoUnitario.toFixed(2)}</td>
-                <td>{produto.fornecedor}</td>
-                <td>{new Date(produto.dataCadastro).toLocaleDateString()}</td>
+                <td>{produto.codigoProduto || '-'}</td>
+                <td>{produto.nomeProduto || '-'}</td>
+                <td>{produto.descricao || '-'}</td>
+                <td>{produto.categoria || '-'}</td>
+                <td>{produto.precoUnitario ? produto.precoUnitario.toFixed(2) : '-'}</td>
+                <td>{produto.quantidade || '-'}</td>
+                <td>{produto.fornecedor || '-'}</td>
+                <td>{produto.dataCadastro ? new Date(produto.dataCadastro).toLocaleDateString() : '-'}</td>
                 <td>
                   <Button variant="warning" onClick={() => editarProduto(produto.id)}>
                     <FaEdit /> {/* Ícone de editar */}
-                  </Button>
+                  </Button>{' '}
                   <Button variant="danger" onClick={() => deletarProduto(produto.id)}>
                     <FaTrash /> {/* Ícone de deletar */}
                   </Button>

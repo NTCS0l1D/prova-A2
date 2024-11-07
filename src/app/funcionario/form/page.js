@@ -4,25 +4,32 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { v4 as uuidv4 } from 'uuid';
 import { Button, Col, Form, Row } from 'react-bootstrap';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import InputMask from 'react-input-mask';
 import Pagina from '@/components/Pagina';
-import apiLocalidades from '@/services/apiLocalidades'; // Certifique-se de importar o serviço da API
+import apiLocalidades from '@/services/apiLocalidades';
 
 export default function FuncionarioFormPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const funcionarioId = searchParams.get('id');
   const [funcionarios, setFuncionarios] = useState([]);
+  const [funcionarioData, setFuncionarioData] = useState(null);
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
   const [loadingEstados, setLoadingEstados] = useState(true);
   const [loadingCidades, setLoadingCidades] = useState(false);
 
   useEffect(() => {
-    // Carrega funcionários do localStorage ao montar o componente
     const funcionariosSalvos = JSON.parse(localStorage.getItem('funcionarios')) || [];
     setFuncionarios(funcionariosSalvos);
 
-    // Carrega os estados ao montar o componente
+    if (funcionarioId) {
+      const funcionario = funcionariosSalvos.find(f => f.id === funcionarioId);
+      if (funcionario) setFuncionarioData(funcionario);
+    }
+
     const fetchEstados = async () => {
       try {
         const response = await apiLocalidades.get('/estados');
@@ -35,9 +42,14 @@ export default function FuncionarioFormPage() {
     };
 
     fetchEstados();
-  }, []);
+  }, [funcionarioId]);
 
-  // Carrega as cidades ao selecionar um estado
+  useEffect(() => {
+    if (funcionarioData && funcionarioData.estado) {
+      fetchCidades(funcionarioData.estado);
+    }
+  }, [funcionarioData]);
+
   const fetchCidades = async (estadoId) => {
     setLoadingCidades(true);
     try {
@@ -50,13 +62,13 @@ export default function FuncionarioFormPage() {
     }
   };
 
-  const initialValues = {
+  const initialValues = funcionarioData || {
     nome: '',
     sobrenome: '',
     cargo: '',
     email: '',
     telefone: '',
-    dataNascimento: '',  // Alterado para data de nascimento
+    dataNascimento: '',
     cidade: '',
     estado: ''
   };
@@ -67,24 +79,32 @@ export default function FuncionarioFormPage() {
     cargo: Yup.string().required("Campo obrigatório"),
     email: Yup.string().email("Email inválido").required("Campo obrigatório"),
     telefone: Yup.string().required("Campo obrigatório"),
-    dataNascimento: Yup.date().required("Campo obrigatório").nullable().typeError("Data inválida"),  // Alterado para validação de data
+    dataNascimento: Yup.date().required("Campo obrigatório").nullable().typeError("Data inválida"),
     cidade: Yup.string().required("Campo obrigatório"),
     estado: Yup.string().required("Campo obrigatório")
   });
 
-  function salvarFuncionario(dados) {
-    const novosFuncionarios = [...funcionarios, { ...dados, id: uuidv4() }];
+  const salvarFuncionario = (dados) => {
+    let novosFuncionarios;
+
+    if (funcionarioId) {
+      novosFuncionarios = funcionarios.map(f => f.id === funcionarioId ? { ...f, ...dados } : f);
+    } else {
+      novosFuncionarios = [...funcionarios, { ...dados, id: uuidv4() }];
+    }
+
     localStorage.setItem('funcionarios', JSON.stringify(novosFuncionarios));
-    alert("Funcionário cadastrado com sucesso!");
-    router.push("/funcionario"); // Navega para a lista de funcionários
-  }
+    alert(funcionarioId ? "Funcionário atualizado com sucesso!" : "Funcionário cadastrado com sucesso!");
+    router.push("/funcionario");
+  };
 
   return (
     <div>
       <Pagina />
-      <h1>Cadastro de Funcionário</h1>
+      <h1>{funcionarioId ? "Editar Funcionário" : "Cadastro de Funcionário"}</h1>
       <Formik
         initialValues={initialValues}
+        enableReinitialize
         validationSchema={validationSchema}
         onSubmit={salvarFuncionario}
       >
@@ -149,14 +169,20 @@ export default function FuncionarioFormPage() {
             <Row className='mb-2'>
               <Form.Group as={Col}>
                 <Form.Label>Telefone:</Form.Label>
-                <Form.Control
-                  name='telefone'
-                  type='text'
+                <InputMask
+                  mask="(99) 99999-9999"
                   value={values.telefone}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  isInvalid={touched.telefone && errors.telefone}
-                />
+                >
+                  {(inputProps) => (
+                    <Form.Control
+                      {...inputProps}
+                      name="telefone"
+                      isInvalid={touched.telefone && errors.telefone}
+                    />
+                  )}
+                </InputMask>
                 <Form.Control.Feedback type='invalid'>{errors.telefone}</Form.Control.Feedback>
               </Form.Group>
 
@@ -175,7 +201,7 @@ export default function FuncionarioFormPage() {
             </Row>
 
             <Row className='mb-2'>
-            <Form.Group as={Col}>
+              <Form.Group as={Col}>
                 <Form.Label>Estado:</Form.Label>
                 <Form.Select
                   name='estado'
@@ -217,8 +243,6 @@ export default function FuncionarioFormPage() {
                 </Form.Select>
                 <Form.Control.Feedback type='invalid'>{errors.cidade}</Form.Control.Feedback>
               </Form.Group>
-
-              
             </Row>
 
             <Button variant="primary" type="submit" className='mt-3' disabled={loadingEstados || loadingCidades}>

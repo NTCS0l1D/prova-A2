@@ -24,14 +24,14 @@ export default function FuncionariosListPage() {
     localStorage.setItem('funcionarios', JSON.stringify(novosFuncionarios));
   };
 
-  // Função para redirecionar para a página de edição com os dados do funcionário
+  // Função para redirecionar para a página de edição com o ID do funcionário
   const editarFuncionario = (id) => {
-    router.push(`/funcionario/form/${id}`);
+    router.push(`/funcionario/form?id=${id}`);
   };
 
   return (
     <div>
-    <Pagina />
+      <Pagina />
       <h1>Lista de Funcionários</h1>
       <Button variant="primary" onClick={() => router.push('/funcionario/form')}>Novo Funcionário</Button>
       
@@ -43,7 +43,7 @@ export default function FuncionariosListPage() {
             <th>Cargo</th>
             <th>Email</th>
             <th>Telefone</th>
-            <th>Endereço</th>
+            <th>Data</th> {/* Substituído Endereço por Data */}
             <th>Cidade</th>
             <th>Estado</th>
             <th>Ações</th>
@@ -58,7 +58,7 @@ export default function FuncionariosListPage() {
                 <td>{funcionario.cargo}</td>
                 <td>{funcionario.email}</td>
                 <td>{funcionario.telefone}</td>
-                <td>{funcionario.endereco}</td>
+                <td>{funcionario.dataNascimento}</td> {/* Campo data adicionado */}
                 <td>{funcionario.cidade}</td>
                 <td>{funcionario.estado}</td>
                 <td>
