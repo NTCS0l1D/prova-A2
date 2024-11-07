@@ -5,22 +5,43 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { v4 as uuidv4 } from 'uuid';
 import { Button, Col, Form, Row } from 'react-bootstrap';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation'; // Importar useSearchParams
 import { useEffect, useState } from 'react';
 import Pagina from '@/components/Pagina';
 import apiLocalidades from '@/services/apiLocalidades';
 
 export default function ClienteFormPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const clienteId = searchParams.get('id'); // Obtém o ID do cliente da URL
+
   const [clientes, setClientes] = useState([]);
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
+  const [initialValues, setInitialValues] = useState({
+    nome: '',
+    sobrenome: '',
+    cpf: '',
+    email: '',
+    telefone: '',
+    dataNascimento: '',
+    cidade: '',
+    estado: ''
+  });
 
   useEffect(() => {
     // Carrega clientes do localStorage ao montar o componente
     const clientesSalvos = JSON.parse(localStorage.getItem('clientes')) || [];
     setClientes(clientesSalvos);
-  }, []);
+
+    // Verifica se existe um ID e carrega os dados do cliente correspondente
+    if (clienteId) {
+      const clienteExistente = clientesSalvos.find(cliente => cliente.id === clienteId);
+      if (clienteExistente) {
+        setInitialValues(clienteExistente); // Define os valores iniciais do cliente
+      }
+    }
+  }, [clienteId]);
 
   // Carrega os estados ao montar o componente
   useEffect(() => {
@@ -45,17 +66,6 @@ export default function ClienteFormPage() {
     }
   };
 
-  const initialValues = {
-    nome: '',
-    sobrenome: '',
-    cpf: '',
-    email: '',
-    telefone: '',
-    dataNascimento: '',
-    cidade: '',
-    estado: ''
-  };
-
   const validationSchema = Yup.object().shape({
     nome: Yup.string().required("Campo obrigatório"),
     sobrenome: Yup.string().required("Campo obrigatório"),
@@ -68,19 +78,28 @@ export default function ClienteFormPage() {
   });
 
   function salvarCliente(dados) {
-    const novosClientes = [...clientes, { ...dados, id: uuidv4() }];
+    let novosClientes;
+    if (clienteId) {
+      // Atualiza cliente existente
+      novosClientes = clientes.map(cliente => (cliente.id === clienteId ? { ...dados, id: clienteId } : cliente));
+    } else {
+      // Adiciona novo cliente
+      novosClientes = [...clientes, { ...dados, id: uuidv4() }];
+    }
+
     localStorage.setItem('clientes', JSON.stringify(novosClientes));
-    alert("Cliente cadastrado com sucesso!");
-    router.push("/cliente"); // Navega para a lista de clientes
+    alert("Cliente salvo com sucesso!");
+    router.push("/cliente"); // Redireciona para a lista de clientes
   }
 
   return (
     <div>
       <Pagina />
-      <h1>Cadastro de Cliente</h1>
+      <h1>{clienteId ? 'Editar Cliente' : 'Novo Cliente'}</h1>
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
+        enableReinitialize // Permite que os valores iniciais sejam atualizados quando initialValues mudar
         onSubmit={salvarCliente}
       >
         {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (

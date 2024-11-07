@@ -1,4 +1,3 @@
-// src/app/funcionarios/form/page.js
 'use client';
 
 import { Formik } from 'formik';
@@ -8,16 +7,48 @@ import { Button, Col, Form, Row } from 'react-bootstrap';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Pagina from '@/components/Pagina';
+import apiLocalidades from '@/services/apiLocalidades'; // Certifique-se de importar o serviço da API
 
 export default function FuncionarioFormPage() {
   const router = useRouter();
   const [funcionarios, setFuncionarios] = useState([]);
+  const [estados, setEstados] = useState([]);
+  const [cidades, setCidades] = useState([]);
+  const [loadingEstados, setLoadingEstados] = useState(true);
+  const [loadingCidades, setLoadingCidades] = useState(false);
 
   useEffect(() => {
     // Carrega funcionários do localStorage ao montar o componente
     const funcionariosSalvos = JSON.parse(localStorage.getItem('funcionarios')) || [];
     setFuncionarios(funcionariosSalvos);
+
+    // Carrega os estados ao montar o componente
+    const fetchEstados = async () => {
+      try {
+        const response = await apiLocalidades.get('/estados');
+        setEstados(response.data);
+        setLoadingEstados(false);
+      } catch (error) {
+        console.error("Erro ao carregar os estados:", error);
+        setLoadingEstados(false);
+      }
+    };
+
+    fetchEstados();
   }, []);
+
+  // Carrega as cidades ao selecionar um estado
+  const fetchCidades = async (estadoId) => {
+    setLoadingCidades(true);
+    try {
+      const response = await apiLocalidades.get(`/estados/${estadoId}/municipios`);
+      setCidades(response.data);
+      setLoadingCidades(false);
+    } catch (error) {
+      console.error("Erro ao carregar as cidades:", error);
+      setLoadingCidades(false);
+    }
+  };
 
   const initialValues = {
     nome: '',
@@ -25,7 +56,7 @@ export default function FuncionarioFormPage() {
     cargo: '',
     email: '',
     telefone: '',
-    endereco: '',
+    dataNascimento: '',  // Alterado para data de nascimento
     cidade: '',
     estado: ''
   };
@@ -36,7 +67,7 @@ export default function FuncionarioFormPage() {
     cargo: Yup.string().required("Campo obrigatório"),
     email: Yup.string().email("Email inválido").required("Campo obrigatório"),
     telefone: Yup.string().required("Campo obrigatório"),
-    endereco: Yup.string().required("Campo obrigatório"),
+    dataNascimento: Yup.date().required("Campo obrigatório").nullable().typeError("Data inválida"),  // Alterado para validação de data
     cidade: Yup.string().required("Campo obrigatório"),
     estado: Yup.string().required("Campo obrigatório")
   });
@@ -130,48 +161,69 @@ export default function FuncionarioFormPage() {
               </Form.Group>
 
               <Form.Group as={Col}>
-                <Form.Label>Endereço:</Form.Label>
+                <Form.Label>Data de Nascimento:</Form.Label>
                 <Form.Control
-                  name='endereco'
-                  type='text'
-                  value={values.endereco}
+                  name='dataNascimento'
+                  type='date'
+                  value={values.dataNascimento}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  isInvalid={touched.endereco && errors.endereco}
+                  isInvalid={touched.dataNascimento && errors.dataNascimento}
                 />
-                <Form.Control.Feedback type='invalid'>{errors.endereco}</Form.Control.Feedback>
+                <Form.Control.Feedback type='invalid'>{errors.dataNascimento}</Form.Control.Feedback>
               </Form.Group>
             </Row>
 
             <Row className='mb-2'>
+            <Form.Group as={Col}>
+                <Form.Label>Estado:</Form.Label>
+                <Form.Select
+                  name='estado'
+                  value={values.estado}
+                  onChange={(e) => {
+                    handleChange(e);
+                    fetchCidades(e.target.value);
+                  }}
+                  onBlur={handleBlur}
+                  isInvalid={touched.estado && errors.estado}
+                  disabled={loadingEstados}
+                >
+                  <option value="">Selecione o Estado</option>
+                  {estados.map((estado) => (
+                    <option key={estado.id} value={estado.id}>
+                      {estado.nome}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Control.Feedback type='invalid'>{errors.estado}</Form.Control.Feedback>
+              </Form.Group>
+
               <Form.Group as={Col}>
                 <Form.Label>Cidade:</Form.Label>
-                <Form.Control
+                <Form.Select
                   name='cidade'
-                  type='text'
                   value={values.cidade}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   isInvalid={touched.cidade && errors.cidade}
-                />
+                  disabled={loadingCidades}
+                >
+                  <option value="">Selecione a Cidade</option>
+                  {cidades.map((cidade) => (
+                    <option key={cidade.id} value={cidade.nome}>
+                      {cidade.nome}
+                    </option>
+                  ))}
+                </Form.Select>
                 <Form.Control.Feedback type='invalid'>{errors.cidade}</Form.Control.Feedback>
               </Form.Group>
 
-              <Form.Group as={Col}>
-                <Form.Label>Estado:</Form.Label>
-                <Form.Control
-                  name='estado'
-                  type='text'
-                  value={values.estado}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  isInvalid={touched.estado && errors.estado}
-                />
-                <Form.Control.Feedback type='invalid'>{errors.estado}</Form.Control.Feedback>
-              </Form.Group>
+              
             </Row>
 
-            <Button variant="primary" type="submit" className='mt-3'>Salvar</Button>
+            <Button variant="primary" type="submit" className='mt-3' disabled={loadingEstados || loadingCidades}>
+              {loadingEstados || loadingCidades ? 'Carregando...' : 'Salvar'}
+            </Button>
           </Form>
         )}
       </Formik>

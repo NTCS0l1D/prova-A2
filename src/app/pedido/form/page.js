@@ -1,4 +1,3 @@
-// src/app/pedidos/form/page.js
 'use client';
 
 import { Formik } from 'formik';
@@ -12,17 +11,33 @@ import Pagina from '@/components/Pagina';
 export default function PedidoFormPage() {
   const router = useRouter();
   const [pedidos, setPedidos] = useState([]);
+  const [produtos, setProdutos] = useState([]);
+  const [clientes, setClientes] = useState([]); // Adicionado estado para clientes
+  const [funcionarios, setFuncionarios] = useState([]); // Adicionado estado para funcionários
 
   useEffect(() => {
     // Carrega pedidos do localStorage ao montar o componente
     const pedidosSalvos = JSON.parse(localStorage.getItem('pedidos')) || [];
     setPedidos(pedidosSalvos);
+    
+    // Carrega produtos (simulação de dados ou fetch de API)
+    const produtosSalvos = JSON.parse(localStorage.getItem('produtos')) || [];
+    setProdutos(produtosSalvos);
+
+    // Carrega clientes do localStorage
+    const clientesSalvos = JSON.parse(localStorage.getItem('clientes')) || [];
+    setClientes(clientesSalvos);
+
+    // Carrega funcionários do localStorage
+    const funcionariosSalvos = JSON.parse(localStorage.getItem('funcionarios')) || [];
+    setFuncionarios(funcionariosSalvos);
   }, []);
 
   const initialValues = {
     numeroPedido: '',
     cliente: '',
-    dataPedido: '',
+    funcionario: '', // Alterado para funcionário
+    dataPedido: '',  // Removido, pois foi substituído por funcionário
     produto: '',
     quantidade: '',
     precoUnitario: '',
@@ -33,7 +48,7 @@ export default function PedidoFormPage() {
   const validationSchema = Yup.object().shape({
     numeroPedido: Yup.string().required("Campo obrigatório"),
     cliente: Yup.string().required("Campo obrigatório"),
-    dataPedido: Yup.date().required("Campo obrigatório"),
+    funcionario: Yup.string().required("Campo obrigatório"), // Alterado para funcionário
     produto: Yup.string().required("Campo obrigatório"),
     quantidade: Yup.number().required("Campo obrigatório").positive().integer(),
     precoUnitario: Yup.number().required("Campo obrigatório").positive(),
@@ -50,7 +65,7 @@ export default function PedidoFormPage() {
 
   return (
     <div>
-    <Pagina />
+      <Pagina />
       <h1>Cadastro de Pedido</h1>
       <Formik
         initialValues={initialValues}
@@ -75,42 +90,64 @@ export default function PedidoFormPage() {
 
               <Form.Group as={Col}>
                 <Form.Label>Cliente:</Form.Label>
-                <Form.Control
+                <Form.Select
                   name='cliente'
-                  type='text'
                   value={values.cliente}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   isInvalid={touched.cliente && errors.cliente}
-                />
+                >
+                  <option value="">Selecione...</option>
+                  {clientes.map(cliente => (
+                    <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>
+                  ))}
+                </Form.Select>
                 <Form.Control.Feedback type='invalid'>{errors.cliente}</Form.Control.Feedback>
               </Form.Group>
             </Row>
 
             <Row className='mb-2'>
               <Form.Group as={Col}>
-                <Form.Label>Data do Pedido:</Form.Label>
-                <Form.Control
-                  name='dataPedido'
-                  type='date'
-                  value={values.dataPedido}
+                <Form.Label>Funcionário:</Form.Label>
+                <Form.Select
+                  name='funcionario'
+                  value={values.funcionario}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  isInvalid={touched.dataPedido && errors.dataPedido}
-                />
-                <Form.Control.Feedback type='invalid'>{errors.dataPedido}</Form.Control.Feedback>
+                  isInvalid={touched.funcionario && errors.funcionario}
+                >
+                  <option value="">Selecione...</option>
+                  {funcionarios.map(funcionario => (
+                    <option key={funcionario.id} value={funcionario.id}>{funcionario.nome}</option>
+                  ))}
+                </Form.Select>
+                <Form.Control.Feedback type='invalid'>{errors.funcionario}</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group as={Col}>
                 <Form.Label>Produto:</Form.Label>
-                <Form.Control
+                <Form.Select
                   name='produto'
-                  type='text'
                   value={values.produto}
-                  onChange={handleChange}
+                  onChange={e => {
+                    handleChange(e);
+                    // Encontra o produto selecionado
+                    const produtoSelecionado = produtos.find(produto => produto.id === e.target.value);
+                    // Atualiza o preço unitário com o valor do produto selecionado
+                    if (produtoSelecionado) {
+                      handleChange({ target: { name: 'precoUnitario', value: produtoSelecionado.precoUnitario } });
+                    }
+                  }}
                   onBlur={handleBlur}
                   isInvalid={touched.produto && errors.produto}
-                />
+                >
+                  <option value="">Selecione...</option>
+                  {produtos.map(produto => (
+                    <option key={produto.id} value={produto.id}>
+                      {produto.nomeProduto} {/* Exibe o nome do produto */}
+                    </option>
+                  ))}
+                </Form.Select>
                 <Form.Control.Feedback type='invalid'>{errors.produto}</Form.Control.Feedback>
               </Form.Group>
             </Row>
@@ -122,7 +159,12 @@ export default function PedidoFormPage() {
                   name='quantidade'
                   type='number'
                   value={values.quantidade}
-                  onChange={handleChange}
+                  onChange={e => {
+                    handleChange(e);
+                    // Calcula o total automaticamente
+                    const total = e.target.value * values.precoUnitario;
+                    handleChange({ target: { name: 'total', value: total } });
+                  }}
                   onBlur={handleBlur}
                   isInvalid={touched.quantidade && errors.quantidade}
                 />

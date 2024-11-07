@@ -1,32 +1,40 @@
-// src/app/fornecedores/list/page.js
-'use client';
+'use client'
 
 import Pagina from '@/components/Pagina';
 import { useEffect, useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { useRouter } from 'next/navigation';
 import { FaPen, FaTrash } from 'react-icons/fa';
+import apiLocalidades from '@/services/apiLocalidades';
 
 export default function FornecedoresListPage() {
   const router = useRouter();
   const [fornecedores, setFornecedores] = useState([]);
+  const [estados, setEstados] = useState({});
 
   useEffect(() => {
-    // Carrega fornecedores do localStorage ao montar o componente
     const fornecedoresSalvos = JSON.parse(localStorage.getItem('fornecedores')) || [];
     setFornecedores(fornecedoresSalvos);
+
+    const fetchEstados = async () => {
+      try {
+        const response = await apiLocalidades.get('/estados');
+        const estadosMap = response.data.reduce((acc, estado) => {
+          acc[estado.id] = estado.nome;
+          return acc;
+        }, {});
+        setEstados(estadosMap);
+      } catch (error) {
+        console.error("Erro ao carregar os estados:", error);
+      }
+    };
+    fetchEstados();
   }, []);
 
-  // Função para deletar um fornecedor
   const deletarFornecedor = (id) => {
     const novosFornecedores = fornecedores.filter(fornecedor => fornecedor.id !== id);
     setFornecedores(novosFornecedores);
     localStorage.setItem('fornecedores', JSON.stringify(novosFornecedores));
-  };
-
-  // Função para redirecionar para a página de edição com os dados do fornecedor
-  const editarFornecedor = (id) => {
-    router.push(`/fornecedor/form/${id}`);
   };
 
   return (
@@ -44,38 +52,36 @@ export default function FornecedoresListPage() {
             <th>Telefone</th>
             <th>Cidade</th>
             <th>Estado</th>
-            <th>Produto</th>
+            <th>Categoria</th>
             <th>Prazo de Entrega</th>
             <th>Ações</th>
           </tr>
         </thead>
         <tbody>
-          {fornecedores.length > 0 ? (
-            fornecedores.map((fornecedor) => (
-              <tr key={fornecedor.id}>
-                <td>{fornecedor.empresa}</td>
-                <td>{fornecedor.cnpj}</td>
-                <td>{fornecedor.email}</td>
-                <td>{fornecedor.telefone}</td>
-                <td>{fornecedor.cidade}</td>
-                <td>{fornecedor.estado}</td>
-                <td>{fornecedor.produto}</td>
-                <td>{fornecedor.prazoEntrega} dias</td>
-                <td>
-                <Button className='me-2' href={`fornecedor/form?id=${fornecedor.id}`} variant="warning">
-                    <FaPen />
-                  </Button>
-                  <Button variant="danger" size="sm" onClick={() => deletarFornecedor(fornecedor.id)}>
-                    <FaTrash /> {/* Ícone de deletar */}
-                  </Button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="9" className="text-center">Nenhum fornecedor cadastrado</td>
+          {fornecedores.map((fornecedor) => (
+            <tr key={fornecedor.id}>
+              <td>{fornecedor.empresa}</td>
+              <td>{fornecedor.cnpj}</td>
+              <td>{fornecedor.email}</td>
+              <td>{fornecedor.telefone}</td>
+              <td>{fornecedor.cidade}</td>
+              <td>{estados[fornecedor.estado] || fornecedor.estado}</td>
+              <td>{fornecedor.categoria}</td>
+              <td>{fornecedor.prazoEntrega} dias</td>
+              <td>
+                <Button
+                  className='me-2'
+                  variant="warning"
+                  onClick={() => router.push(`/fornecedor/form?id=${fornecedor.id}`)}
+                >
+                  <FaPen />
+                </Button>
+                <Button variant="danger" onClick={() => deletarFornecedor(fornecedor.id)}>
+                  <FaTrash />
+                </Button>
+              </td>
             </tr>
-          )}
+          ))}
         </tbody>
       </Table>
     </div>

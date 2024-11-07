@@ -10,17 +10,16 @@ import { useEffect, useState } from 'react';
 
 export default function ProdutoFormPage() {
   const router = useRouter();
-  const [produtos, setProdutos] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);
+  const [categorias, setCategorias] = useState([]);
 
   useEffect(() => {
-    const produtosSalvos = JSON.parse(localStorage.getItem('produtos')) || [];
-    console.log(produtosSalvos);
-    setProdutos(produtosSalvos);
-
     const fornecedoresSalvos = JSON.parse(localStorage.getItem('fornecedores')) || [];
-    console.log(fornecedoresSalvos);
     setFornecedores(fornecedoresSalvos);
+
+    // Filtra categorias únicas dos fornecedores
+    const categoriasUnicas = [...new Set(fornecedoresSalvos.map(fornecedor => fornecedor.categoria))];
+    setCategorias(categoriasUnicas);
   }, []);
 
   const initialValues = {
@@ -28,10 +27,7 @@ export default function ProdutoFormPage() {
     nomeProduto: '',
     descricao: '',
     categoria: '',
-    marca: '',
     quantidade: '',
-    precoUnitario: '',
-    valorUnitario: '',
     fornecedor: '',
     dataCadastro: ''
   };
@@ -41,20 +37,26 @@ export default function ProdutoFormPage() {
     nomeProduto: Yup.string().required("Campo obrigatório"),
     descricao: Yup.string().required("Campo obrigatório"),
     categoria: Yup.string().required("Campo obrigatório"),
-    marca: Yup.string().required("Campo obrigatório"),
     quantidade: Yup.number().required("Campo obrigatório").positive().integer(),
     precoUnitario: Yup.number().required("Campo obrigatório").positive(),
-    valorUnitario: Yup.number().required("Campo obrigatório").positive(),
     fornecedor: Yup.string().required("Campo obrigatório"),
     dataCadastro: Yup.date().required("Campo obrigatório")
   });
 
   function salvarProduto(dados) {
-    const novosProdutos = [...produtos, { ...dados, id: uuidv4() }];
+    // Recupera os produtos já salvos no localStorage ou define como uma lista vazia
+    const produtosSalvos = JSON.parse(localStorage.getItem('produtos')) || [];
+    
+    // Cria um novo array de produtos com o novo produto adicionado
+    const novosProdutos = [...produtosSalvos, { ...dados, id: uuidv4() }];
+    
+    // Salva o array atualizado no localStorage
     localStorage.setItem('produtos', JSON.stringify(novosProdutos));
+    
     alert("Produto cadastrado com sucesso!");
     router.push("/produto");
   }
+  
 
   return (
     <div>
@@ -83,20 +85,14 @@ export default function ProdutoFormPage() {
 
               <Form.Group as={Col}>
                 <Form.Label>Produto:</Form.Label>
-                <Form.Select
+                <Form.Control
                   name='nomeProduto'
+                  type='text'
                   value={values.nomeProduto}
                   onChange={handleChange}
                   onBlur={handleBlur}
                   isInvalid={touched.nomeProduto && errors.nomeProduto}
-                >
-                  <option value="">Selecione o Produto</option>
-                  {produtos.map((produto) => (
-                    <option key={produto.id} value={produto.nomeProduto}>
-                      {produto.nomeProduto}
-                    </option>
-                  ))}
-                </Form.Select>
+                />
                 <Form.Control.Feedback type='invalid'>{errors.nomeProduto}</Form.Control.Feedback>
               </Form.Group>
             </Row>
@@ -125,10 +121,11 @@ export default function ProdutoFormPage() {
                   isInvalid={touched.categoria && errors.categoria}
                 >
                   <option value="">Selecione...</option>
-                  <option value="Smartphone">Smartphone</option>
-                  <option value="Notebook">Notebook</option>
-                  <option value="Smartwatch">Smartwatch</option>
-                  <option value="Videogame">Videogame</option>
+                  {categorias.map((categoria, index) => (
+                    <option key={index} value={categoria}>
+                      {categoria}
+                    </option>
+                  ))}
                 </Form.Select>
                 <Form.Control.Feedback type='invalid'>{errors.categoria}</Form.Control.Feedback>
               </Form.Group>
