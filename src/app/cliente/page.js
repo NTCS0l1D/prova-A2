@@ -46,6 +46,17 @@ export default function ClientesListPage() {
     router.push(`/cliente/form?id=${clienteid}`); // Certifique-se de usar o ID correto aqui
   }
 
+  // Função para formatar CPF
+function formatarCPF(cpf) {
+  return cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
+}
+
+// Função para formatar Telefone
+function formatarTelefone(telefone) {
+  return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+}
+
+
   return (
     <div>
       <Pagina />
@@ -73,8 +84,8 @@ export default function ClientesListPage() {
                 <td>{cliente.nome}</td>
                 <td>{cliente.sobrenome}</td>
                 <td>{cliente.email}</td>
-                <td>{cliente.telefone}</td>
-                <td>{cliente.cpf}</td>
+                <td>{formatarTelefone(cliente.telefone)}</td>
+                <td>{formatarCPF(cliente.cpf)}</td>
                 <td>{cliente.cidade}</td>
                 {/* Exibe o nome do estado usando o dicionário `estados` */}
                 <td>{estados[cliente.estado] || "Estado desconhecido"}</td>

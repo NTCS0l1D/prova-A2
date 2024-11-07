@@ -12,19 +12,16 @@ export default function ProdutosListPage() {
   const [produtos, setProdutos] = useState([]);
 
   useEffect(() => {
-    // Carrega produtos do localStorage ao montar o componente
     const produtosSalvos = JSON.parse(localStorage.getItem('produtos')) || [];
     setProdutos(produtosSalvos);
   }, []);
 
-  // Função para deletar um produto
   const deletarProduto = (id) => {
     const novosProdutos = produtos.filter(produto => produto.id !== id);
     setProdutos(novosProdutos);
     localStorage.setItem('produtos', JSON.stringify(novosProdutos));
   };
 
-  // Função para redirecionar para a página de edição com os dados do produto
   const editarProduto = (id) => {
     router.push(`/produto/form?id=${id}`);
   };
@@ -57,16 +54,23 @@ export default function ProdutosListPage() {
                 <td>{produto.nomeProduto || '-'}</td>
                 <td>{produto.descricao || '-'}</td>
                 <td>{produto.categoria || '-'}</td>
-                <td>{produto.precoUnitario ? produto.precoUnitario.toFixed(2) : '-'}</td>
+                <td>
+                  {produto.precoUnitario
+                    ? produto.precoUnitario.toLocaleString("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      })
+                    : '-'}
+                </td>
                 <td>{produto.quantidade || '-'}</td>
                 <td>{produto.fornecedor || '-'}</td>
                 <td>{produto.dataCadastro ? new Date(produto.dataCadastro).toLocaleDateString() : '-'}</td>
                 <td>
                   <Button variant="warning" onClick={() => editarProduto(produto.id)}>
-                    <FaEdit /> {/* Ícone de editar */}
+                    <FaEdit />
                   </Button>{' '}
                   <Button variant="danger" onClick={() => deletarProduto(produto.id)}>
-                    <FaTrash /> {/* Ícone de deletar */}
+                    <FaTrash />
                   </Button>
                 </td>
               </tr>

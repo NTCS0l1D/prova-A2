@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -7,7 +7,6 @@ import { Button, Col, Form, Row } from 'react-bootstrap';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Pagina from '@/components/Pagina';
-import InputMask from 'react-input-mask';
 
 export default function PedidoFormPage() {
   const router = useRouter();
@@ -61,8 +60,10 @@ export default function PedidoFormPage() {
     status: Yup.string().required("Campo obrigatório")
   });
 
+  // Função para formatar o valor como moeda para exibição
   function formatCurrency(value) {
-    return `R$ ${parseFloat(value).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
+    const numero = Number(value);
+    return `R$ ${isNaN(numero) ? "0,00" : numero.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
   }
 
   function salvarPedido(dados) {
@@ -153,6 +154,7 @@ export default function PedidoFormPage() {
                     const produtoSelecionado = produtos.find(produto => produto.id === e.target.value);
                     if (produtoSelecionado) {
                       setFieldValue('precoUnitario', produtoSelecionado.precoUnitario);
+                      setFieldValue('total', produtoSelecionado.precoUnitario * (values.quantidade || 0));
                     }
                   }}
                   onBlur={handleBlur}
@@ -194,12 +196,9 @@ export default function PedidoFormPage() {
                   name="precoUnitario"
                   type="text"
                   value={formatCurrency(values.precoUnitario)}
-                  onChange={(e) => {
-                    const precoUnitario = parseFloat(e.target.value.replace("R$ ", "").replace(",", ".")) || 0;
-                    setFieldValue('precoUnitario', precoUnitario);
-                    setFieldValue('total', (values.quantidade || 0) * precoUnitario);
-                  }}
+                  onChange={handleChange}
                   onBlur={handleBlur}
+                  readOnly
                   isInvalid={touched.precoUnitario && errors.precoUnitario}
                 />
                 <Form.Control.Feedback type='invalid'>{errors.precoUnitario}</Form.Control.Feedback>

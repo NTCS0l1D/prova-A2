@@ -50,7 +50,7 @@ export default function ProdutoFormPage() {
     descricao: Yup.string().required("Campo obrigatório"),
     categoria: Yup.string().required("Campo obrigatório"),
     quantidade: Yup.number().required("Campo obrigatório").positive("Deve ser um número positivo").integer("Deve ser um número inteiro"),
-    precoUnitario: Yup.number().required("Campo obrigatório").positive("Deve ser um número positivo"),
+    precoUnitario: Yup.string().required("Campo obrigatório"),
     fornecedor: Yup.string().required("Campo obrigatório"),
     dataCadastro: Yup.date().required("Campo obrigatório")
   });
@@ -73,6 +73,17 @@ export default function ProdutoFormPage() {
     router.push("/produto");
   }
 
+  // Função para formatar o valor como moeda
+  const formatarMoeda = (valor) => {
+    const valorNumerico = valor.replace(/\D/g, ""); // Remove tudo que não é número
+    const valorFormatado = (Number(valorNumerico) / 100).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+    return valorFormatado;
+  };
+
+
   return (
     <div>
       <Pagina />
@@ -84,7 +95,7 @@ export default function ProdutoFormPage() {
           validationSchema={validationSchema}
           onSubmit={salvarProduto}
         >
-          {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
+          {({ values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue }) => (
             <Form onSubmit={handleSubmit}>
               <Row className='mb-2'>
                 <Form.Group as={Col}>
@@ -149,14 +160,16 @@ export default function ProdutoFormPage() {
               </Row>
 
               <Row className='mb-2'>
-                <Form.Group as={Col}>
+              <Form.Group as={Col}>
                   <Form.Label>Preço Unitário:</Form.Label>
                   <Form.Control
                     name='precoUnitario'
-                    type='number'
-                    step="0.01"
+                    type='text'
                     value={values.precoUnitario}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      const valorFormatado = formatarMoeda(e.target.value);
+                      setFieldValue("precoUnitario", valorFormatado);
+                    }}
                     onBlur={handleBlur}
                     isInvalid={touched.precoUnitario && errors.precoUnitario}
                   />

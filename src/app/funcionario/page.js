@@ -29,6 +29,11 @@ export default function FuncionariosListPage() {
     router.push(`/funcionario/form?id=${id}`);
   };
 
+  // Função para formatar Telefone
+function formatarTelefone(telefone) {
+  return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+}
+
   return (
     <div>
       <Pagina />
@@ -57,7 +62,7 @@ export default function FuncionariosListPage() {
                 <td>{funcionario.sobrenome}</td>
                 <td>{funcionario.cargo}</td>
                 <td>{funcionario.email}</td>
-                <td>{funcionario.telefone}</td>
+                <td>{formatarTelefone(funcionario.telefone)}</td>
                 <td>{funcionario.dataNascimento}</td> {/* Campo data adicionado */}
                 <td>{funcionario.cidade}</td>
                 <td>{funcionario.estado}</td>

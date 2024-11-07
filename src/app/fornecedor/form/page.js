@@ -152,7 +152,7 @@ export default function FornecedorFormPage() {
                 <Form.Group>
                   <Form.Label>Telefone</Form.Label>
                   <InputMask
-                    mask="(99) 99999-9999"
+                    mask="9999-9999"
                     value={values.telefone}
                     onChange={handleChange}
                   >

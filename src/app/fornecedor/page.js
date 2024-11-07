@@ -37,6 +37,16 @@ export default function FornecedoresListPage() {
     localStorage.setItem('fornecedores', JSON.stringify(novosFornecedores));
   };
 
+  // Função para formatar o telefone no formato "9999-9999"
+  const formatarTelefone = (telefone) => {
+    return telefone.replace(/(\d{4})(\d{4})/, "$1-$2");
+  };
+
+  // Função para formatar o CNPJ no formato "99.999.999/9999-99"
+  const formatarCNPJ = (cnpj) => {
+    return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+  };
+ 
   return (
     <div>
       <Pagina />
@@ -61,9 +71,9 @@ export default function FornecedoresListPage() {
           {fornecedores.map((fornecedor) => (
             <tr key={fornecedor.id}>
               <td>{fornecedor.empresa}</td>
-              <td>{fornecedor.cnpj}</td>
+              <td>{formatarCNPJ(fornecedor.cnpj)}</td>
               <td>{fornecedor.email}</td>
-              <td>{fornecedor.telefone}</td>
+              <td>{formatarTelefone(fornecedor.telefone)}</td>
               <td>{fornecedor.cidade}</td>
               <td>{estados[fornecedor.estado] || fornecedor.estado}</td>
               <td>{fornecedor.categoria}</td>
