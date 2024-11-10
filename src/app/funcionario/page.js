@@ -1,4 +1,3 @@
-// src/app/funcionarios/list/page.js
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -6,15 +5,33 @@ import { Button, Table } from 'react-bootstrap';
 import { useRouter } from 'next/navigation';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import Pagina from '@/components/Pagina';
+import apiLocalidades from '@/services/apiLocalidades'; // Importa o serviço para buscar estados
 
 export default function FuncionariosListPage() {
   const router = useRouter();
   const [funcionarios, setFuncionarios] = useState([]);
+  const [estados, setEstados] = useState({});
 
   useEffect(() => {
     // Carrega funcionários do localStorage ao montar o componente
     const funcionariosSalvos = JSON.parse(localStorage.getItem('funcionarios')) || [];
     setFuncionarios(funcionariosSalvos);
+
+    // Busca estados e cria um dicionário de código para nome
+    const fetchEstados = async () => {
+      try {
+        const response = await apiLocalidades.get('/estados');
+        const estadosMap = response.data.reduce((acc, estado) => {
+          acc[estado.id] = estado.nome;
+          return acc;
+        }, {});
+        setEstados(estadosMap);
+      } catch (error) {
+        console.error("Erro ao carregar os estados:", error);
+      }
+    };
+    
+    fetchEstados();
   }, []);
 
   // Função para deletar um funcionário
@@ -30,16 +47,20 @@ export default function FuncionariosListPage() {
   };
 
   // Função para formatar Telefone
-function formatarTelefone(telefone) {
-  return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
-}
+  function formatarTelefone(telefone) {
+    return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+  }
+
+  // Função para formatar Data de Nascimento (ano-mes-dia para dia/mes/ano)
+  function formatarData(data) {
+    const [ano, mes, dia] = data.split('-');
+    return `${dia}/${mes}/${ano}`;
+  }
 
   return (
-    <div>
+    <div style={styles.pageContainer}>
       <Pagina />
-      <h1>Lista de Funcionários</h1>
-      <Button variant="primary" onClick={() => router.push('/funcionario/form')}>Novo Funcionário</Button>
-      
+      <h1 className="text-center">Lista de Funcionários</h1>      
       <Table striped bordered hover className='mt-3'>
         <thead>
           <tr>
@@ -48,7 +69,7 @@ function formatarTelefone(telefone) {
             <th>Cargo</th>
             <th>Email</th>
             <th>Telefone</th>
-            <th>Data</th> {/* Substituído Endereço por Data */}
+            <th>Data de Nascimento</th> {/* Substituído Endereço por Data de Nascimento */}
             <th>Cidade</th>
             <th>Estado</th>
             <th>Ações</th>
@@ -63,9 +84,10 @@ function formatarTelefone(telefone) {
                 <td>{funcionario.cargo}</td>
                 <td>{funcionario.email}</td>
                 <td>{formatarTelefone(funcionario.telefone)}</td>
-                <td>{funcionario.dataNascimento}</td> {/* Campo data adicionado */}
+                <td>{formatarData(funcionario.dataNascimento)}</td>
                 <td>{funcionario.cidade}</td>
-                <td>{funcionario.estado}</td>
+                {/* Exibe o nome do estado usando o dicionário `estados` */}
+                <td>{estados[funcionario.estado] || "Estado desconhecido"}</td>
                 <td>
                   <Button variant="warning" size="sm" onClick={() => editarFuncionario(funcionario.id)} className="me-2">
                     <FaEdit /> {/* Ícone de editar */}
@@ -83,6 +105,26 @@ function formatarTelefone(telefone) {
           )}
         </tbody>
       </Table>
+      <div className="text-center mt-3">
+        <Button variant="primary" onClick={() => router.push('/funcionario/form')}>Novo Funcionário</Button>
+      </div>
+
     </div>
   );
 }
+
+const styles = {
+  pageContainer: {
+    backgroundColor: '#d1e7dd', // Cor de fundo suave em azul claro
+    minHeight: '100vh', // Ocupa toda a altura da tela
+  },
+  table: {
+    borderRadius: '8px', // Bordas arredondadas na tabela
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Sombra suave para a tabela
+    backgroundColor: '#fff', // Fundo branco da tabela
+  },
+  button: {
+    margin: '0 10px', // Espaçamento entre os botões
+    padding: '10px 20px', // Tamanho maior para o botão
+  }
+};

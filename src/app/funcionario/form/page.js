@@ -3,7 +3,7 @@
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { v4 as uuidv4 } from 'uuid';
-import { Button, Col, Form, Row } from 'react-bootstrap';
+import { Container, Button, Col, Form, Row, Card } from 'react-bootstrap';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import InputMask from 'react-input-mask';
@@ -99,9 +99,10 @@ export default function FuncionarioFormPage() {
   };
 
   return (
-    <div>
-      <Pagina />
-      <h1>{funcionarioId ? "Editar Funcionário" : "Cadastro de Funcionário"}</h1>
+    <Pagina>
+      <Container fluid style={styles.container}>
+        <Card className="mx-auto" style={styles.card}>
+      <h1 style={styles.title}>{funcionarioId ? "Editar Funcionário" : "Cadastrar Funcionário"}</h1>
       <Formik
         initialValues={initialValues}
         enableReinitialize
@@ -245,12 +246,41 @@ export default function FuncionarioFormPage() {
               </Form.Group>
             </Row>
 
-            <Button variant="primary" type="submit" className='mt-3' disabled={loadingEstados || loadingCidades}>
+            <Button type="submit" style={styles.submitButton}>
               {loadingEstados || loadingCidades ? 'Carregando...' : 'Salvar'}
             </Button>
           </Form>
         )}
       </Formik>
-    </div>
+        </Card>
+      </Container>
+    </Pagina>
   );
 }
+const styles = {
+  container: { // Indented colon
+    backgroundColor: '#e9f3fb',
+    paddingTop: '20px',
+    paddingBottom: '40px',
+    minHeight: '100vh',
+  },
+  card: {
+    maxWidth: '1000px', // Aumenta a largura do card
+    width: '100%', 
+    padding: '30px', // Ajusta o padding interno do card
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    backgroundColor: '#f8f9fa',
+    },
+  title: {
+    textAlign: 'center',
+    marginBottom: '20px',
+    color: '#007bff',
+  },
+  submitButton: {
+    display: 'block',
+    margin: '0 auto',
+    marginTop: '20px',
+    padding: '10px 30px',
+  },
+};

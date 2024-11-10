@@ -62,11 +62,9 @@ export default function PedidosListPage() {
   };
 
   return (
-    <div>
+    <div style={styles.pageContainer}>
       <Pagina />
-      <h1>Lista de Pedidos</h1>
-      <Button variant="primary" onClick={() => router.push('/pedido/form')}>Novo Pedido</Button>
-      
+      <h1 className="text-center">Lista de Pedidos</h1>      
       <Table striped bordered hover className='mt-3'>
         <thead>
           <tr>
@@ -113,6 +111,25 @@ export default function PedidosListPage() {
           )}
         </tbody>
       </Table>
+      <div className="text-center mt-3">
+        <Button variant="primary" onClick={() => router.push('/pedido/form')}>Novo Pedido</Button>
+        </div>
     </div>
   );
 }
+
+const styles = {
+  pageContainer: {
+    backgroundColor: '#d1e7dd', // Cor de fundo suave em azul claro
+    minHeight: '100vh', // Ocupa toda a altura da tela
+  },
+  table: {
+    borderRadius: '8px', // Bordas arredondadas na tabela
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Sombra suave para a tabela
+    backgroundColor: '#fff', // Fundo branco da tabela
+  },
+  button: {
+    margin: '0 10px', // Espaçamento entre os botões
+    padding: '10px 20px', // Tamanho maior para o botão
+  }
+};

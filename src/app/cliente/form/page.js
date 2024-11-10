@@ -1,14 +1,13 @@
 'use client'
-
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { v4 as uuidv4 } from 'uuid';
-import { Button, Col, Form, Row } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row, Card } from 'react-bootstrap';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Pagina from '@/components/Pagina';
 import apiLocalidades from '@/services/apiLocalidades';
-import InputMask from 'react-input-mask'; // Importação do InputMask
+import InputMask from 'react-input-mask';
+import Pagina from '@/components/Pagina';
 
 export default function ClienteFormPage() {
   const router = useRouter();
@@ -21,9 +20,9 @@ export default function ClienteFormPage() {
   const [initialValues, setInitialValues] = useState({
     nome: '',
     sobrenome: '',
-    cpf: '',           // Valor inicial vazio com máscara
+    cpf: '',
     email: '',
-    telefone: '',      // Valor inicial vazio com máscara
+    telefone: '',
     dataNascimento: '',
     cidade: '',
     estado: ''
@@ -87,162 +86,196 @@ export default function ClienteFormPage() {
   }
 
   return (
-    <div>
-      <Pagina />
-      <h1>{clienteId ? 'Editar Cliente' : 'Novo Cliente'}</h1>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        enableReinitialize
-        onSubmit={salvarCliente}
-      >
-        {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
-          <Form onSubmit={handleSubmit}>
-            <Row className='mb-2'>
-              <Form.Group as={Col}>
-                <Form.Label>Nome:</Form.Label>
-                <Form.Control
-                  name='nome'
-                  type='text'
-                  value={values.nome}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  isInvalid={touched.nome && errors.nome}
-                />
-                <Form.Control.Feedback type='invalid'>{errors.nome}</Form.Control.Feedback>
-              </Form.Group>
-
-              <Form.Group as={Col}>
-                <Form.Label>Sobrenome:</Form.Label>
-                <Form.Control
-                  name='sobrenome'
-                  type='text'
-                  value={values.sobrenome}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  isInvalid={touched.sobrenome && errors.sobrenome}
-                />
-                <Form.Control.Feedback type='invalid'>{errors.sobrenome}</Form.Control.Feedback>
-              </Form.Group>
-            </Row>
-
-            <Row className='mb-2'>
-              <Form.Group as={Col}>
-                <Form.Label>CPF:</Form.Label>
-                <InputMask
-                  mask="999.999.999-99"
-                  value={values.cpf}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  defaultValue={initialValues.cpf} // Força a exibição da máscara
-                >
-                  {() => (
+      <Pagina>
+        <Container fluid style={styles.container}>
+        <Card className="mx-auto" style={styles.card}>
+          <Card.Body>
+            <h1 style={styles.title}>{clienteId ? 'Editar Cliente' : 'Cadastrar Cliente'}</h1>
+            <Formik
+              initialValues={initialValues}
+              validationSchema={validationSchema}
+              enableReinitialize
+              onSubmit={salvarCliente}
+            >
+            {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
+              <Form onSubmit={handleSubmit} style={styles.form}>
+                <Row className='mb-3'>
+                  <Form.Group as={Col}>
+                    <Form.Label>Nome:</Form.Label>
                     <Form.Control
-                      name="cpf"
-                      type="text"
-                      isInvalid={touched.cpf && errors.cpf}
+                      name='nome'
+                      type='text'
+                      value={values.nome}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      isInvalid={touched.nome && errors.nome}
                     />
-                  )}
-                </InputMask>
-                <Form.Control.Feedback type='invalid'>{errors.cpf}</Form.Control.Feedback>
-              </Form.Group>
+                    <Form.Control.Feedback type='invalid'>{errors.nome}</Form.Control.Feedback>
+                  </Form.Group>
 
-              <Form.Group as={Col}>
-                <Form.Label>Email:</Form.Label>
-                <Form.Control
-                  name='email'
-                  type='email'
-                  value={values.email}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  isInvalid={touched.email && errors.email}
-                />
-                <Form.Control.Feedback type='invalid'>{errors.email}</Form.Control.Feedback>
-              </Form.Group>
-            </Row>
-
-            <Row className='mb-2'>
-              <Form.Group as={Col}>
-                <Form.Label>Telefone:</Form.Label>
-                <InputMask
-                  mask="(99) 99999-9999"
-                  value={values.telefone}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  defaultValue={initialValues.telefone} // Força a exibição da máscara
-                >
-                  {() => (
+                  <Form.Group as={Col}>
+                    <Form.Label>Sobrenome:</Form.Label>
                     <Form.Control
-                      name="telefone"
-                      type="text"
-                      isInvalid={touched.telefone && errors.telefone}
+                      name='sobrenome'
+                      type='text'
+                      value={values.sobrenome}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      isInvalid={touched.sobrenome && errors.sobrenome}
                     />
-                  )}
-                </InputMask>
-                <Form.Control.Feedback type='invalid'>{errors.telefone}</Form.Control.Feedback>
-              </Form.Group>
+                    <Form.Control.Feedback type='invalid'>{errors.sobrenome}</Form.Control.Feedback>
+                  </Form.Group>
+                </Row>
 
-              <Form.Group as={Col}>
-                <Form.Label>Data de Nascimento:</Form.Label>
-                <Form.Control
-                  name='dataNascimento'
-                  type='date'
-                  value={values.dataNascimento}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  isInvalid={touched.dataNascimento && errors.dataNascimento}
-                />
-                <Form.Control.Feedback type='invalid'>{errors.dataNascimento}</Form.Control.Feedback>
-              </Form.Group>
-            </Row>
+                <Row className='mb-3'>
+                  <Form.Group as={Col}>
+                    <Form.Label>CPF:</Form.Label>
+                    <InputMask
+                      mask="999.999.999-99"
+                      value={values.cpf}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      defaultValue={initialValues.cpf}
+                    >
+                      {() => (
+                        <Form.Control
+                          name="cpf"
+                          type="text"
+                          isInvalid={touched.cpf && errors.cpf}
+                        />
+                      )}
+                    </InputMask>
+                    <Form.Control.Feedback type='invalid'>{errors.cpf}</Form.Control.Feedback>
+                  </Form.Group>
 
-            <Row className='mb-2'>
-              <Form.Group as={Col}>
-                <Form.Label>Estado:</Form.Label>
-                <Form.Select
-                  name='estado'
-                  value={values.estado}
-                  onChange={(e) => {
-                    handleChange(e);
-                    fetchCidades(e.target.value);
-                  }}
-                  onBlur={handleBlur}
-                  isInvalid={touched.estado && errors.estado}
-                >
-                  <option value="">Selecione o Estado</option>
-                  {estados.map((estado) => (
-                    <option key={estado.id} value={estado.id}>
-                      {estado.nome}
-                    </option>
-                  ))}
-                </Form.Select>
-                <Form.Control.Feedback type='invalid'>{errors.estado}</Form.Control.Feedback>
-              </Form.Group>
+                  <Form.Group as={Col}>
+                    <Form.Label>Email:</Form.Label>
+                    <Form.Control
+                      name='email'
+                      type='email'
+                      value={values.email}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      isInvalid={touched.email && errors.email}
+                    />
+                    <Form.Control.Feedback type='invalid'>{errors.email}</Form.Control.Feedback>
+                  </Form.Group>
+                </Row>
 
-              <Form.Group as={Col}>
-                <Form.Label>Cidade:</Form.Label>
-                <Form.Select
-                  name='cidade'
-                  value={values.cidade}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  isInvalid={touched.cidade && errors.cidade}
-                >
-                  <option value="">Selecione a Cidade</option>
-                  {cidades.map((cidade) => (
-                    <option key={cidade.id} value={cidade.nome}>
-                      {cidade.nome}
-                    </option>
-                  ))}
-                </Form.Select>
-                <Form.Control.Feedback type='invalid'>{errors.cidade}</Form.Control.Feedback>
-              </Form.Group>
-            </Row>
+                <Row className='mb-3'>
+                  <Form.Group as={Col}>
+                    <Form.Label>Telefone:</Form.Label>
+                    <InputMask
+                      mask="(99) 99999-9999"
+                      value={values.telefone}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      defaultValue={initialValues.telefone}
+                    >
+                      {() => (
+                        <Form.Control
+                          name="telefone"
+                          type="text"
+                          isInvalid={touched.telefone && errors.telefone}
+                        />
+                      )}
+                    </InputMask>
+                    <Form.Control.Feedback type='invalid'>{errors.telefone}</Form.Control.Feedback>
+                  </Form.Group>
 
-            <Button variant="primary" type="submit" className='mt-3'>Salvar</Button>
-          </Form>
-        )}
-      </Formik>
-    </div>
+                  <Form.Group as={Col}>
+                    <Form.Label>Data de Nascimento:</Form.Label>
+                    <Form.Control
+                      name='dataNascimento'
+                      type='date'
+                      value={values.dataNascimento}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      isInvalid={touched.dataNascimento && errors.dataNascimento}
+                    />
+                    <Form.Control.Feedback type='invalid'>{errors.dataNascimento}</Form.Control.Feedback>
+                  </Form.Group>
+                </Row>
+
+                <Row className='mb-3'>
+                  <Form.Group as={Col}>
+                    <Form.Label>Estado:</Form.Label>
+                    <Form.Select
+                      name='estado'
+                      value={values.estado}
+                      onChange={(e) => {
+                        handleChange(e);
+                        fetchCidades(e.target.value);
+                      }}
+                      onBlur={handleBlur}
+                      isInvalid={touched.estado && errors.estado}
+                    >
+                      <option value="">Selecione o Estado</option>
+                      {estados.map((estado) => (
+                        <option key={estado.id} value={estado.id}>
+                          {estado.nome}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    <Form.Control.Feedback type='invalid'>{errors.estado}</Form.Control.Feedback>
+                  </Form.Group>
+
+                  <Form.Group as={Col}>
+                    <Form.Label>Cidade:</Form.Label>
+                    <Form.Select
+                      name='cidade'
+                      value={values.cidade}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      isInvalid={touched.cidade && errors.cidade}
+                    >
+                      <option value="">Selecione a Cidade</option>
+                      {cidades.map((cidade) => (
+                        <option key={cidade.id} value={cidade.nome}>
+                          {cidade.nome}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    <Form.Control.Feedback type='invalid'>{errors.cidade}</Form.Control.Feedback>
+                  </Form.Group>
+                </Row>
+
+                <Button variant="primary" type="submit" style={styles.submitButton}>Salvar</Button>
+              </Form>
+            )}
+          </Formik>
+        </Card.Body>
+      </Card>
+      </Container>
+      </Pagina>
   );
 }
+
+// Estilos adicionais para um visual mais elegante
+const styles = {
+  container: {
+    backgroundColor: '#e9f3fb',
+    paddingTop: '20px',
+    paddingBottom: '40px',
+    minHeight: '100vh',
+  },
+  card: {
+    maxWidth: '1000px', // Aumenta a largura do card
+    width: '100%', 
+    padding: '30px', // Ajusta o padding interno do card
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    backgroundColor: '#f8f9fa',
+  },
+  title: {
+    textAlign: 'center',
+    marginBottom: '20px',
+    color: '#007bff',
+  },
+  submitButton: {
+    display: 'block',
+    margin: '0 auto',
+    marginTop: '20px',
+    padding: '10px 30px',
+  },
+};
