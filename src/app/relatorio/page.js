@@ -23,12 +23,15 @@ const Relatorio = () => {
   }, []);
 
   useEffect(() => {
-    // Verificar se os dados foram carregados antes de configurar os gráficos
-    if (pedidos.length > 0 && clientes.length > 0 && document.getElementById('graficoPedidosStatus') && document.getElementById('graficoPedidosValores')) {
+    if (
+      pedidos.length > 0 &&
+      clientes.length > 0 &&
+      document.getElementById('graficoPedidosStatus') &&
+      document.getElementById('graficoPedidosValores')
+    ) {
       configurarGraficos();
     }
 
-    // Cleanup: destrói os gráficos ao desmontar o componente ou ao atualizar dados
     return () => {
       if (graficoStatusRef.current) graficoStatusRef.current.destroy();
       if (graficoValoresRef.current) graficoValoresRef.current.destroy();
@@ -101,11 +104,8 @@ const Relatorio = () => {
 
   const exportarPDF = () => {
     const doc = new jsPDF();
-
-    // Adicionar título
     doc.text('Relatório de Pedidos', 14, 20);
 
-    // Adicionar tabela
     const pedidosFormatados = pedidos.map((pedido) => [
       pedido.numeroPedido,
       clientes.find((cliente) => cliente.id === pedido.cliente)?.nome,
@@ -118,26 +118,85 @@ const Relatorio = () => {
       startY: 30,
     });
 
-    // Adicionar gráfico de pedidos por status
     const canvasStatus = document.getElementById('graficoPedidosStatus');
     const imgDataStatus = canvasStatus.toDataURL('image/png');
     doc.addImage(imgDataStatus, 'PNG', 15, doc.autoTable.previous.finalY + 10, 90, 60);
 
-    // Adicionar gráfico de valores por cliente
     const canvasValores = document.getElementById('graficoPedidosValores');
     const imgDataValores = canvasValores.toDataURL('image/png');
     doc.addImage(imgDataValores, 'PNG', 105, doc.autoTable.previous.finalY + 10, 90, 60);
 
-    // Exportar PDF
     doc.save('relatorio_pedidos.pdf');
   };
+
+  useEffect(() => {
+    // Estilos para o título
+    const titulo = document.querySelector('h2');
+    titulo.style.textAlign = 'center';
+    titulo.style.color = '#333';
+    titulo.style.marginBottom = '20px';
+    titulo.style.fontFamily = 'Arial, sans-serif';
+
+    // Estilos para a tabela
+    const tabela = document.querySelector('table');
+    tabela.style.width = '100%';
+    tabela.style.marginBottom = '20px';
+    tabela.style.borderCollapse = 'collapse';
+    tabela.style.fontFamily = 'Arial, sans-serif';
+    tabela.style.fontSize = '14px';
+    tabela.style.textAlign = 'left';
+    tabela.style.border = '1px solid #ddd';
+    tabela.style.borderRadius = '8px';
+    tabela.style.overflow = 'hidden';
+    tabela.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.1)';
+
+    const cabecalhoTabela = document.querySelector('table thead tr');
+    cabecalhoTabela.style.backgroundColor = '#3f51b5';
+    cabecalhoTabela.style.color = '#fff';
+
+    // Estilos para cada linha da tabela
+    const linhasTabela = document.querySelectorAll('table tbody tr');
+    linhasTabela.forEach((linha, index) => {
+      linha.style.backgroundColor = index % 2 === 0 ? '#f9f9f9' : '#fff';
+    });
+
+    // Estilos para os gráficos
+    const graficos = document.querySelectorAll('canvas');
+    graficos.forEach((grafico) => {
+      grafico.parentNode.style.width = '45%';
+      grafico.parentNode.style.height = '300px';
+      grafico.parentNode.style.border = '1px solid #ccc';
+      grafico.parentNode.style.padding = '10px';
+      grafico.parentNode.style.borderRadius = '8px';
+      grafico.parentNode.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.1)';
+      grafico.parentNode.style.backgroundColor = '#fff';
+    });
+
+    // Estilos para o botão de exportação
+    const botaoExportar = document.querySelector('.exportar-btn');
+    if (botaoExportar) {
+      botaoExportar.style.display = 'block';
+      botaoExportar.style.margin = '20px auto';
+      botaoExportar.style.padding = '12px 24px';
+      botaoExportar.style.fontSize = '16px';
+      botaoExportar.style.color = '#fff';
+      botaoExportar.style.backgroundColor = '#4caf50';
+      botaoExportar.style.border = 'none';
+      botaoExportar.style.borderRadius = '8px';
+      botaoExportar.style.cursor = 'pointer';
+      botaoExportar.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.1)';
+      botaoExportar.style.fontFamily = 'Arial, sans-serif';
+
+      botaoExportar.onmouseover = () => (botaoExportar.style.backgroundColor = '#45a049');
+      botaoExportar.onmouseout = () => (botaoExportar.style.backgroundColor = '#4caf50');
+    }
+  }, []);
 
   return (
     <Pagina>
       <h2>Relatório de Pedidos</h2>
-      
-      {/* Tabela de Pedidos */}
-      <table border="1" cellPadding="10" style={{ width: '100%', marginBottom: '20px' }}>
+
+      <table border="1" cellPadding="10">
         <thead>
           <tr>
             <th>Número do Pedido</th>
@@ -158,18 +217,18 @@ const Relatorio = () => {
         </tbody>
       </table>
 
-      {/* Gráficos */}
       <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
-        <div style={{ width: '45%', height: '300px' }}>
+        <div>
           <canvas id="graficoPedidosStatus"></canvas>
         </div>
-        <div style={{ width: '45%', height: '300px' }}>
+        <div>
           <canvas id="graficoPedidosValores"></canvas>
         </div>
       </div>
 
-      {/* Botão para exportar PDF */}
-      <button onClick={exportarPDF}>Exportar para PDF</button>
+      <button className="exportar-btn" onClick={exportarPDF}>
+        Exportar PDF
+      </button>
     </Pagina>
   );
 };
