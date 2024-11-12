@@ -183,7 +183,9 @@ const Relatorio = () => {
     const botaoExportar = document.querySelector('.exportar-btn');
     if (botaoExportar) {
       botaoExportar.style.display = 'block';
-      botaoExportar.style.backgroundColor = '#4caf50';
+      botaoExportar.style.backgroundColor = '#ff6347';
+      botaoExportar.style.margin = '0 auto'; // Centraliza em relação ao contêiner pai
+      botaoExportar.style.textAlign = 'center';
     }
   }, []);
 
@@ -212,7 +214,7 @@ const Relatorio = () => {
         </tbody>
       </table>
 
-      <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '30px', marginBottom: '20px' }}>
         <div className="grafico-container">
           <canvas id="graficoPedidosStatus"></canvas>
         </div>
