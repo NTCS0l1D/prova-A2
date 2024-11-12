@@ -1,3 +1,4 @@
+// Importa os hooks e componentes necessários do React, Formik e Bootstrap
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,14 +7,16 @@ import * as Yup from 'yup';
 import { Formik } from 'formik';
 import InputMask from 'react-input-mask';
 import { Button, Col, Container, Form, Row, Card } from 'react-bootstrap';
-import apiLocalidades from '@/services/apiLocalidades';
-import Pagina from '@/components/Pagina';
+import apiLocalidades from '@/services/apiLocalidades'; // API personalizada para localidades
+import Pagina from '@/components/Pagina'; // Componente para renderizar a página com estilo padrão
 
+// Componente principal da página de formulário de fornecedores
 export default function FornecedorFormPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const fornecedorId = searchParams.get('id');
+  const fornecedorId = searchParams.get('id'); // Obtém o ID do fornecedor dos parâmetros de consulta da URL
 
+  // Define os estados para armazenar dados dos fornecedores, estados, cidades e valores iniciais do formulário
   const [fornecedores, setFornecedores] = useState([]);
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
@@ -28,21 +31,23 @@ export default function FornecedorFormPage() {
     prazoEntrega: ''
   });
 
+  // Carrega fornecedores do localStorage e define valores iniciais se um fornecedor existente for editado
   useEffect(() => {
     const fornecedoresSalvos = JSON.parse(localStorage.getItem('fornecedores')) || [];
     setFornecedores(fornecedoresSalvos);
 
-    if (fornecedorId) {
+    if (fornecedorId) { // Se um ID de fornecedor estiver presente na URL, carrega os dados do fornecedor
       const fornecedorExistente = fornecedoresSalvos.find(fornecedor => fornecedor.id === fornecedorId);
       if (fornecedorExistente) {
         setInitialValues(fornecedorExistente);
-        if (fornecedorExistente.estado) {
+        if (fornecedorExistente.estado) { // Carrega cidades se o estado estiver preenchido
           fetchCidades(fornecedorExistente.estado);
         }
       }
     }
   }, [fornecedorId]);
 
+  // Carrega estados da API quando o componente é montado
   useEffect(() => {
     const fetchEstados = async () => {
       try {
@@ -55,6 +60,7 @@ export default function FornecedorFormPage() {
     fetchEstados();
   }, []);
 
+  // Função para buscar cidades com base no estado selecionado
   const fetchCidades = async (estadoId) => {
     try {
       const response = await apiLocalidades.get(`/estados/${estadoId}/municipios`);
@@ -64,6 +70,7 @@ export default function FornecedorFormPage() {
     }
   };
 
+  // Esquema de validação do formulário usando Yup
   const validationSchema = Yup.object().shape({
     empresa: Yup.string().required("Campo obrigatório"),
     cnpj: Yup.string()
@@ -79,24 +86,25 @@ export default function FornecedorFormPage() {
     prazoEntrega: Yup.number().required("Campo obrigatório")
   });
 
+  // Função para salvar ou atualizar o fornecedor no localStorage e redirecionar o usuário
   const handleSave = (values) => {
     const fornecedoresSalvos = JSON.parse(localStorage.getItem('fornecedores')) || [];
-    if (fornecedorId) {
+    if (fornecedorId) { // Atualiza o fornecedor se um ID for fornecido
       const fornecedorIndex = fornecedoresSalvos.findIndex(fornecedor => fornecedor.id === fornecedorId);
       if (fornecedorIndex !== -1) {
         fornecedoresSalvos[fornecedorIndex] = values;
       }
-    } else {
+    } else { // Adiciona um novo fornecedor se não houver ID
       values.id = new Date().getTime().toString();
       fornecedoresSalvos.push(values);
     }
     localStorage.setItem('fornecedores', JSON.stringify(fornecedoresSalvos));
     alert("Fornecedor salvo com sucesso!");
-    router.push('/fornecedor');
+    router.push('/fornecedor'); // Redireciona o usuário após o salvamento
   };
 
   return (
-    <Pagina>
+    <Pagina> {/* Container principal da página */}
       <Container fluid style={styles.container}>
         <Card className="mx-auto" style={styles.card}>
           <Card.Body>
@@ -109,6 +117,7 @@ export default function FornecedorFormPage() {
             >
               {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
                 <Form onSubmit={handleSubmit} style={styles.form}>
+                  {/* Linha de campos para Nome da Empresa e CNPJ */}
                   <Row className="mb-3">
                     <Form.Group as={Col}>
                       <Form.Label>Nome da Empresa</Form.Label>
@@ -143,6 +152,7 @@ export default function FornecedorFormPage() {
                     </Form.Group>
                   </Row>
 
+                  {/* Linha de campos para Email e Telefone */}
                   <Row className="mb-3">
                     <Form.Group as={Col}>
                       <Form.Label>Email</Form.Label>
@@ -177,6 +187,7 @@ export default function FornecedorFormPage() {
                     </Form.Group>
                   </Row>
 
+                  {/* Linha de campos para Estado e Cidade */}
                   <Row className="mb-3">
                     <Form.Group as={Col}>
                       <Form.Label>Estado</Form.Label>
@@ -216,6 +227,7 @@ export default function FornecedorFormPage() {
                     </Form.Group>
                   </Row>
 
+                  {/* Linha de campos para Categoria e Prazo de Entrega */}
                   <Row className="mb-3">
                     <Form.Group as={Col}>
                       <Form.Label>Categoria</Form.Label>
@@ -244,6 +256,7 @@ export default function FornecedorFormPage() {
                     </Form.Group>
                   </Row>
 
+                  {/* Botão para submeter o formulário */}
                   <Button variant="primary" type="submit" style={styles.submitButton}>
                     {fornecedorId ? "Salvar Alterações" : "Cadastrar Fornecedor"}
                   </Button>
@@ -257,25 +270,26 @@ export default function FornecedorFormPage() {
   );
 }
 
+// Estilos para o layout e aparência do formulário
 const styles = {
   container: {
-    backgroundColor: '#e9f3fb',
+    backgroundColor: '#e9f3fb', // Cor de fundo clara para a página
     paddingTop: '20px',
     paddingBottom: '40px',
     minHeight: '100vh',
   },
   card: {
-    maxWidth: '1000px', // Aumenta a largura do card
+    maxWidth: '1000px', // Largura máxima do card
     width: '100%', 
-    padding: '30px', // Ajusta o padding interno do card
+    padding: '30px', // Padding interno do card para espaçamento
     borderRadius: '10px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    backgroundColor: '#f8f9fa',
-    },
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', // Sombra suave ao redor do card
+    backgroundColor: '#f8f9fa', // Cor de fundo do card
+  },
   title: {
     textAlign: 'center',
     marginBottom: '20px',
-    color: '#007bff',
+    color: '#007bff', // Cor azul para o título
   },
   submitButton: {
     display: 'block',

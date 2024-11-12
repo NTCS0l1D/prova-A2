@@ -1,4 +1,5 @@
-'use client'
+// Importações necessárias de pacotes e componentes
+'use client' // Diretiva do Next.js para indicar que este componente deve ser renderizado no lado do cliente
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { v4 as uuidv4 } from 'uuid';
@@ -9,14 +10,18 @@ import apiLocalidades from '@/services/apiLocalidades';
 import InputMask from 'react-input-mask';
 import Pagina from '@/components/Pagina';
 
+// Componente principal do formulário de clientes
 export default function ClienteFormPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const clienteId = searchParams.get('id');
+  const router = useRouter(); // Para navegação entre páginas
+  const searchParams = useSearchParams(); // Para acessar parâmetros da URL
+  const clienteId = searchParams.get('id'); // Obtém o ID do cliente, se houver, para edição
 
+  // Estados para armazenar dados do formulário e listas de clientes, estados e cidades
   const [clientes, setClientes] = useState([]);
   const [estados, setEstados] = useState([]);
   const [cidades, setCidades] = useState([]);
+  
+  // Valores iniciais do formulário (vazio ou preenchido, caso esteja editando)
   const [initialValues, setInitialValues] = useState({
     nome: '',
     sobrenome: '',
@@ -28,6 +33,7 @@ export default function ClienteFormPage() {
     estado: ''
   });
 
+  // Carrega os clientes salvos e, se for edição, preenche o formulário com os dados existentes
   useEffect(() => {
     const clientesSalvos = JSON.parse(localStorage.getItem('clientes')) || [];
     setClientes(clientesSalvos);
@@ -40,11 +46,12 @@ export default function ClienteFormPage() {
     }
   }, [clienteId]);
 
+  // Carrega a lista de estados do serviço de API de localidades
   useEffect(() => {
     const fetchEstados = async () => {
       try {
         const response = await apiLocalidades.get('/estados');
-        setEstados(response.data);
+        setEstados(response.data); // Define os estados no estado do componente
       } catch (error) {
         console.error("Erro ao carregar os estados:", error);
       }
@@ -52,15 +59,17 @@ export default function ClienteFormPage() {
     fetchEstados();
   }, []);
 
+  // Carrega as cidades com base no estado selecionado pelo usuário
   const fetchCidades = async (estadoId) => {
     try {
       const response = await apiLocalidades.get(`/estados/${estadoId}/municipios`);
-      setCidades(response.data);
+      setCidades(response.data); // Define as cidades no estado do componente
     } catch (error) {
       console.error("Erro ao carregar as cidades:", error);
     }
   };
 
+  // Esquema de validação do formulário com Yup para garantir que todos os campos obrigatórios estão preenchidos
   const validationSchema = Yup.object().shape({
     nome: Yup.string().required("Campo obrigatório"),
     sobrenome: Yup.string().required("Campo obrigatório"),
@@ -72,30 +81,35 @@ export default function ClienteFormPage() {
     estado: Yup.string().required("Campo obrigatório")
   });
 
+  // Função para salvar os dados do cliente (novo ou atualizado) no localStorage
   function salvarCliente(dados) {
     let novosClientes;
     if (clienteId) {
+      // Atualiza cliente existente
       novosClientes = clientes.map(cliente => (cliente.id === clienteId ? { ...dados, id: clienteId } : cliente));
     } else {
+      // Adiciona novo cliente com um ID único
       novosClientes = [...clientes, { ...dados, id: uuidv4() }];
     }
 
+    // Armazena a lista atualizada de clientes no localStorage
     localStorage.setItem('clientes', JSON.stringify(novosClientes));
-    alert("Cliente salvo com sucesso!");
-    router.push("/cliente");
+    alert("Cliente salvo com sucesso!"); // Mensagem de confirmação
+    router.push("/cliente"); // Redireciona para a página de lista de clientes
   }
 
   return (
-      <Pagina>
-        <Container fluid style={styles.container}>
+    // Envolve o conteúdo do formulário dentro do componente Pagina para layout padrão
+    <Pagina>
+      <Container fluid style={styles.container}>
         <Card className="mx-auto" style={styles.card}>
           <Card.Body>
             <h1 style={styles.title}>{clienteId ? 'Editar Cliente' : 'Cadastrar Cliente'}</h1>
             <Formik
               initialValues={initialValues}
               validationSchema={validationSchema}
-              enableReinitialize
-              onSubmit={salvarCliente}
+              enableReinitialize // Permite reinicializar valores quando initialValues mudarem
+              onSubmit={salvarCliente} // Função de submissão
             >
             {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
               <Form onSubmit={handleSubmit} style={styles.form}>
@@ -108,7 +122,7 @@ export default function ClienteFormPage() {
                       value={values.nome}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      isInvalid={touched.nome && errors.nome}
+                      isInvalid={touched.nome && errors.nome} // Validação de erro
                     />
                     <Form.Control.Feedback type='invalid'>{errors.nome}</Form.Control.Feedback>
                   </Form.Group>
@@ -127,6 +141,7 @@ export default function ClienteFormPage() {
                   </Form.Group>
                 </Row>
 
+                {/* Máscara para o CPF */}
                 <Row className='mb-3'>
                   <Form.Group as={Col}>
                     <Form.Label>CPF:</Form.Label>
@@ -162,6 +177,7 @@ export default function ClienteFormPage() {
                   </Form.Group>
                 </Row>
 
+                {/* Máscara para telefone */}
                 <Row className='mb-3'>
                   <Form.Group as={Col}>
                     <Form.Label>Telefone:</Form.Label>
@@ -197,6 +213,7 @@ export default function ClienteFormPage() {
                   </Form.Group>
                 </Row>
 
+                {/* Seleciona estado e cidade */}
                 <Row className='mb-3'>
                   <Form.Group as={Col}>
                     <Form.Label>Estado:</Form.Label>
@@ -205,7 +222,7 @@ export default function ClienteFormPage() {
                       value={values.estado}
                       onChange={(e) => {
                         handleChange(e);
-                        fetchCidades(e.target.value);
+                        fetchCidades(e.target.value); // Carrega cidades ao selecionar estado
                       }}
                       onBlur={handleBlur}
                       isInvalid={touched.estado && errors.estado}
@@ -240,42 +257,37 @@ export default function ClienteFormPage() {
                   </Form.Group>
                 </Row>
 
-                <Button variant="primary" type="submit" style={styles.submitButton}>Salvar</Button>
+                {/* Botão de submissão centralizado */}
+                <div className="d-flex justify-content-center">
+                  <Button type="submit" style={styles.submitButton}>Salvar</Button>
+                </div>
               </Form>
             )}
-          </Formik>
-        </Card.Body>
-      </Card>
+            </Formik>
+          </Card.Body>
+        </Card>
       </Container>
-      </Pagina>
+    </Pagina>
   );
 }
 
-// Estilos adicionais para um visual mais elegante
+// Estilos em JavaScript para elementos do formulário e página
 const styles = {
   container: {
-    backgroundColor: '#e9f3fb',
-    paddingTop: '20px',
-    paddingBottom: '40px',
-    minHeight: '100vh',
+    backgroundColor: "#f8f9fa", // Fundo claro
+    minHeight: "100vh",
+    paddingTop: "30px"
   },
   card: {
-    maxWidth: '1000px', // Aumenta a largura do card
-    width: '100%', 
-    padding: '30px', // Ajusta o padding interno do card
-    borderRadius: '10px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    backgroundColor: '#f8f9fa',
+    maxWidth: "1000px", // Largura máxima do card
+    padding: "20px",
+    boxShadow: "0px 0px 15px rgba(0,0,0,0.1)"
   },
   title: {
-    textAlign: 'center',
-    marginBottom: '20px',
-    color: '#007bff',
+    textAlign: "center",
+    color: "#007bff" // Título com cor azul
   },
   submitButton: {
-    display: 'block',
-    margin: '0 auto',
-    marginTop: '20px',
-    padding: '10px 30px',
-  },
+    padding: "10px 30px" // Botão de salvar com padding para melhor usabilidade
+  }
 };
