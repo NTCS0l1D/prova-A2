@@ -11,29 +11,31 @@ import { useEffect, useState } from 'react';
 export default function ProdutoFormPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const produtoId = searchParams ? searchParams.get('id') : null;
+  const produtoId = searchParams ? searchParams.get('id') : null; // Obtém o ID do produto da URL (se houver)
 
-  const [fornecedores, setFornecedores] = useState([]);
-  const [categorias, setCategorias] = useState([]);
-  const [produto, setProduto] = useState(null);
+  const [fornecedores, setFornecedores] = useState([]); // Armazena fornecedores disponíveis
+  const [categorias, setCategorias] = useState([]); // Armazena categorias únicas
+  const [produto, setProduto] = useState(null); // Estado do produto que está sendo editado ou novo
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // Carrega fornecedores do localStorage
       const fornecedoresSalvos = JSON.parse(localStorage.getItem('fornecedores')) || [];
       
-      // Atualizar fornecedores e categorias
       setFornecedores(fornecedoresSalvos);
       const categoriasUnicas = [...new Set(fornecedoresSalvos.map(fornecedor => fornecedor.categoria))];
-      setCategorias(categoriasUnicas);
+      setCategorias(categoriasUnicas); // Extrai categorias únicas dos fornecedores
     }
 
     if (produtoId) {
+      // Carrega o produto existente do localStorage
       const produtosSalvos = JSON.parse(localStorage.getItem('produtos')) || [];
       const produtoExistente = produtosSalvos.find(produto => produto.id === produtoId);
       if (produtoExistente) {
-        setProduto(produtoExistente);
+        setProduto(produtoExistente); // Configura o estado com os dados do produto encontrado
       }
     } else {
+      // Configura o estado inicial para um novo produto
       setProduto({
         codigoProduto: '',
         nomeProduto: '',
@@ -48,6 +50,7 @@ export default function ProdutoFormPage() {
     }
   }, [produtoId]);
 
+  // Validação do formulário usando Yup
   const validationSchema = Yup.object().shape({
     codigoProduto: Yup.string().required("Campo obrigatório"),
     nomeProduto: Yup.string().required("Campo obrigatório"),
@@ -59,10 +62,11 @@ export default function ProdutoFormPage() {
     dataCadastro: Yup.date().required("Campo obrigatório"),
   });
 
+  // Função para salvar o produto
   function salvarProduto(dados) {
     const produtosSalvos = JSON.parse(localStorage.getItem('produtos')) || [];
     
-    // Corrige o valor do preço para número apenas se ele já não for um
+    // Converte o preço para número, se necessário
     const precoUnitarioNumerico = typeof dados.precoUnitario === 'string' 
       ? parseFloat(dados.precoUnitario.replace(/[^\d.-]/g, '').replace(',', '.'))
       : dados.precoUnitario;
@@ -73,17 +77,20 @@ export default function ProdutoFormPage() {
     };
   
     if (produtoId) {
+      // Atualiza o produto existente
       const index = produtosSalvos.findIndex(produto => produto.id === produtoId);
       if (index >= 0) {
-        produtosSalvos[index] = { ...dadosConvertidos, id: produtoId }; // Atualiza o produto existente
+        produtosSalvos[index] = { ...dadosConvertidos, id: produtoId };
       }
     } else {
-      produtosSalvos.push({ ...dadosConvertidos, id: uuidv4() }); // Adiciona novo produto
+      // Adiciona um novo produto
+      produtosSalvos.push({ ...dadosConvertidos, id: uuidv4() });
     }
   
-    localStorage.setItem('produtos', JSON.stringify(produtosSalvos)); // Salva no localStorage
+    // Salva o array de produtos no localStorage e redireciona para a lista de produtos
+    localStorage.setItem('produtos', JSON.stringify(produtosSalvos));
     alert("Produto salvo com sucesso!");
-    router.push("/produto"); // Redireciona para a lista de produtos
+    router.push("/produto");
   }
 
   return (
@@ -239,36 +246,28 @@ export default function ProdutoFormPage() {
   );
 }
 
+// Estilos personalizados para os componentes
 const styles = {
-  container: { // Indented colon
+  container: {
     backgroundColor: '#e9f3fb',
     paddingTop: '20px',
     paddingBottom: '40px',
     minHeight: '100vh',
   },
   card: {
-    maxWidth: '1000px', // Aumenta a largura do card
-    width: '100%', 
-    padding: '30px', // Ajusta o padding interno do card
-    borderRadius: '10px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    backgroundColor: '#f8f9fa',
+    width: '60%',
+    padding: '20px',
+    backgroundColor: '#f7f7f7',
   },
   title: {
-    textAlign: 'center',
-    marginBottom: '20px',
-    color: '#007bff',
+    color: '#0056b3',
     fontWeight: 'bold',
+    marginBottom: '20px',
   },
   submitButton: {
-    display: 'block',
-    width: '100%',
     backgroundColor: '#007bff',
     color: 'white',
-    fontSize: '16px',
-    padding: '10px',
-    borderRadius: '5px',
-    border: 'none',
     marginTop: '20px',
-  }
+    width: '100%',
+  },
 };
