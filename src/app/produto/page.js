@@ -30,7 +30,7 @@ export default function ProdutosListPage() {
     <div style={styles.pageContainer}>
       <Pagina />
       <h1 className="text-center">Lista de Produtos</h1>      
-      <Table striped bordered hover className='mt-3'>
+      <Table striped bordered hover className='mt-3' variant='dark'>
         <thead>
           <tr>
             <th>Código</th>
@@ -89,7 +89,7 @@ export default function ProdutosListPage() {
 
 const styles = {
   pageContainer: {
-    backgroundColor: '#d1e7dd', // Cor de fundo suave em azul claro
+    backgroundColor: '#f4f6f8', // Cor de fundo suave em azul claro
     minHeight: '100vh', // Ocupa toda a altura da tela
   },
   table: {

@@ -50,7 +50,7 @@ export default function FornecedoresListPage() {
       <Pagina />
       <h1 className="text-center">Lista de Fornecedores</h1>
       
-      <Table striped bordered hover className="mt-3" style={styles.table}>
+      <Table striped bordered hover className="mt-3" style={styles.table} variant='dark'>
         <thead>
           <tr>
             <th>Nome da Empresa</th>
@@ -109,7 +109,7 @@ export default function FornecedoresListPage() {
 
 const styles = {
   pageContainer: {
-    backgroundColor: '#d1e7dd', // Cor de fundo suave em azul claro
+    backgroundColor: '#f4f6f8', // Cor de fundo suave em azul claro
     minHeight: '100vh', // Ocupa toda a altura da tela
   },
   table: {
