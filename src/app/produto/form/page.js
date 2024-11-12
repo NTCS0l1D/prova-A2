@@ -202,6 +202,7 @@ export default function ProdutoFormPage() {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         isInvalid={touched.precoUnitario && errors.precoUnitario}
+                        placeholder='Ex: 5200,90'
                       />
                       <Form.Control.Feedback type='invalid'>{errors.precoUnitario}</Form.Control.Feedback>
                     </Form.Group>
