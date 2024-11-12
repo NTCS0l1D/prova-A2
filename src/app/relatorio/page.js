@@ -131,7 +131,7 @@ const Relatorio = () => {
 
   useEffect(() => {
     // Estilos para o título
-    const titulo = document.querySelector('h2');
+    const titulo = document.querySelector('h1');
     titulo.style.textAlign = 'center';
     titulo.style.color = '#333';
     titulo.style.marginBottom = '20px';
@@ -163,13 +163,17 @@ const Relatorio = () => {
     // Estilos para os gráficos
     const graficos = document.querySelectorAll('canvas');
     graficos.forEach((grafico) => {
-      grafico.parentNode.style.width = '45%';
-      grafico.parentNode.style.height = '300px';
-      grafico.parentNode.style.border = '1px solid #ccc';
-      grafico.parentNode.style.padding = '10px';
-      grafico.parentNode.style.borderRadius = '8px';
-      grafico.parentNode.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.1)';
-      grafico.parentNode.style.backgroundColor = '#fff';
+      const graficoContainer = grafico.parentNode;
+      
+      graficoContainer.style.width = '48%';
+      graficoContainer.style.height = '320px';
+      graficoContainer.style.display = 'flex';
+      graficoContainer.style.alignItems = 'center';
+      graficoContainer.style.justifyContent = 'center';
+      graficoContainer.style.border = '1px solid #d0d0d0';
+      graficoContainer.style.borderRadius = '12px';
+      graficoContainer.style.boxShadow = '0px 6px 14px rgba(0, 0, 0, 0.1)';
+      graficoContainer.style.padding = '20px';
     });
 
     // Estilos para o botão de exportação
@@ -194,7 +198,7 @@ const Relatorio = () => {
 
   return (
     <Pagina>
-      <h2>Relatório de Pedidos</h2>
+      <h1>Relatório de Pedidos</h1>
 
       <table border="1" cellPadding="10">
         <thead>
@@ -218,10 +222,10 @@ const Relatorio = () => {
       </table>
 
       <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '20px' }}>
-        <div>
+        <div className="grafico-container">
           <canvas id="graficoPedidosStatus"></canvas>
         </div>
-        <div>
+        <div className="grafico-container">
           <canvas id="graficoPedidosValores"></canvas>
         </div>
       </div>

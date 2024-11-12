@@ -61,13 +61,17 @@ export default function ProdutoFormPage() {
 
   function salvarProduto(dados) {
     const produtosSalvos = JSON.parse(localStorage.getItem('produtos')) || [];
-    const precoUnitarioNumerico = parseFloat(dados.precoUnitario.replace(/[^\d.-]/g, '').replace(',', '.'));
-
+    
+    // Corrige o valor do preço para número apenas se ele já não for um
+    const precoUnitarioNumerico = typeof dados.precoUnitario === 'string' 
+      ? parseFloat(dados.precoUnitario.replace(/[^\d.-]/g, '').replace(',', '.'))
+      : dados.precoUnitario;
+  
     const dadosConvertidos = {
       ...dados,
       precoUnitario: precoUnitarioNumerico
     };
-
+  
     if (produtoId) {
       const index = produtosSalvos.findIndex(produto => produto.id === produtoId);
       if (index >= 0) {
@@ -76,7 +80,7 @@ export default function ProdutoFormPage() {
     } else {
       produtosSalvos.push({ ...dadosConvertidos, id: uuidv4() }); // Adiciona novo produto
     }
-
+  
     localStorage.setItem('produtos', JSON.stringify(produtosSalvos)); // Salva no localStorage
     alert("Produto salvo com sucesso!");
     router.push("/produto"); // Redireciona para a lista de produtos
@@ -202,6 +206,7 @@ export default function ProdutoFormPage() {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         isInvalid={touched.precoUnitario && errors.precoUnitario}
+                        placeholder='Ex: 2499,90'
                       />
                       <Form.Control.Feedback type='invalid'>{errors.precoUnitario}</Form.Control.Feedback>
                     </Form.Group>

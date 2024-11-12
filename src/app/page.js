@@ -71,7 +71,7 @@ export default function HomePage() {
 // Estilos CSS em JS para a página
 const styles = {
   container: {
-    backgroundColor: '#d1e7dd', // Cor de fundo suave em azul claro
+    backgroundColor: '#f4f6f8', // Cor de fundo suave em azul claro
     paddingTop: '20px',
     paddingBottom: '40px',
     minHeight: '100vh', // Ocupa toda a altura da tela

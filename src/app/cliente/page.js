@@ -60,7 +60,7 @@ export default function ClientesListPage() {
       <Pagina />
       <h1 className="text-center">Lista de Clientes</h1>
       
-      <Table striped bordered hover className="mt-3" style={styles.table}>
+      <Table striped bordered hover className="mt-3" style={styles.table} variant='dark'>
         <thead>
           <tr>
             <th>Nome</th>
@@ -114,7 +114,7 @@ export default function ClientesListPage() {
 
 const styles = {
   pageContainer: {
-    backgroundColor: '#d1e7dd', // Cor de fundo suave em azul claro
+    backgroundColor: '#f4f6f8', // Cor de fundo suave em azul claro
     paddingBottom: '40px',
     minHeight: '100vh', // Ocupa toda a altura da tela
   },
