@@ -1,5 +1,6 @@
 'use client'
 
+// Importa os módulos necessários para a funcionalidade do formulário
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,11 +9,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Pagina from '@/components/Pagina';
 
+// Componente principal para o formulário de pedidos
 export default function PedidoFormPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const pedidoId = searchParams ? searchParams.get('id') : null;
+  const router = useRouter(); // Hook para navegar entre as páginas
+  const searchParams = useSearchParams(); // Hook para acessar parâmetros de busca na URL
+  const pedidoId = searchParams ? searchParams.get('id') : null; // Obtém o ID do pedido, caso seja edição
 
+  // Declaração dos estados locais para gerenciar os dados dos pedidos, produtos, clientes e funcionários
   const [pedidos, setPedidos] = useState([]);
   const [produtos, setProdutos] = useState([]);
   const [clientes, setClientes] = useState([]);
@@ -28,6 +31,7 @@ export default function PedidoFormPage() {
     status: ''
   });
 
+  // Hook para carregar dados do localStorage e o pedido específico (se for edição)
   useEffect(() => {
     const pedidosSalvos = JSON.parse(localStorage.getItem('pedidos')) || [];
     setPedidos(pedidosSalvos);
@@ -41,6 +45,7 @@ export default function PedidoFormPage() {
     const funcionariosSalvos = JSON.parse(localStorage.getItem('funcionarios')) || [];
     setFuncionarios(funcionariosSalvos);
 
+    // Se um pedidoId é fornecido, busca o pedido correspondente para edição
     if (pedidoId) {
       const pedidoExistente = pedidosSalvos.find(pedido => pedido.id === pedidoId);
       if (pedidoExistente) {
@@ -49,6 +54,7 @@ export default function PedidoFormPage() {
     }
   }, [pedidoId]);
 
+  // Define o esquema de validação com Yup para os campos do formulário
   const validationSchema = Yup.object().shape({
     numeroPedido: Yup.string().required("Campo obrigatório"),
     cliente: Yup.string().required("Campo obrigatório"),
@@ -60,32 +66,38 @@ export default function PedidoFormPage() {
     status: Yup.string().required("Campo obrigatório")
   });
 
+  // Função para formatar valores monetários (exibe o valor com símbolo de moeda e separadores)
   function formatCurrency(value) {
     const numero = Number(value);
     return `R$ ${isNaN(numero) ? "0,00" : numero.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}`;
   }
 
+  // Função para salvar um novo pedido ou atualizar um existente no localStorage
   function salvarPedido(dados) {
     let novosPedidos = [...pedidos];
     
     if (pedidoId) {
+      // Atualiza o pedido existente caso seja uma edição
       novosPedidos = pedidos.map(pedido => 
         pedido.id === pedidoId ? { ...pedido, ...dados } : pedido
       );
     } else {
+      // Adiciona um novo pedido caso não seja edição
       novosPedidos.push({ id: uuidv4(), ...dados });
     }
 
-    localStorage.setItem('pedidos', JSON.stringify(novosPedidos));
-    alert("Pedido salvo com sucesso!");
-    router.push("/pedido");
+    localStorage.setItem('pedidos', JSON.stringify(novosPedidos)); // Salva no localStorage
+    alert("Pedido salvo com sucesso!"); // Alerta de sucesso
+    router.push("/pedido"); // Redireciona para a página de pedidos
   }
 
   return (
- <Pagina>
+    <Pagina>
+      {/* Layout principal da página */}
       <Container fluid style={styles.container}>
         <Card className="mx-auto" style={styles.card}>
-        <h1 style={styles.title}>{pedidoId ? 'Editar' : 'Cadastrar'}  Pedido</h1>
+          <h1 style={styles.title}>{pedidoId ? 'Editar' : 'Cadastrar'} Pedido</h1>
+          {/* Formik para gerenciamento do formulário com validação e estado inicial */}
           <Formik
             initialValues={pedido}
             validationSchema={validationSchema}
@@ -94,6 +106,7 @@ export default function PedidoFormPage() {
           >
             {({ values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue }) => (
               <Form onSubmit={handleSubmit}>
+                {/* Campos de entrada do formulário para cada propriedade do pedido */}
                 <Row className='mb-2'>
                   <Form.Group as={Col}>
                     <Form.Label>Número do Pedido:</Form.Label>
@@ -126,6 +139,7 @@ export default function PedidoFormPage() {
                   </Form.Group>
                 </Row>
 
+                {/* Outros campos semelhantes, incluindo Produto e Quantidade, com cálculo automático do total */}
                 <Row className='mb-2'>
                   <Form.Group as={Col}>
                     <Form.Label>Funcionário:</Form.Label>
@@ -171,6 +185,7 @@ export default function PedidoFormPage() {
                   </Form.Group>
                 </Row>
 
+                {/* Campo de quantidade com atualização automática do total baseado na quantidade e preço unitário */}
                 <Row className='mb-2'>
                   <Form.Group as={Col}>
                     <Form.Label>Quantidade:</Form.Label>
@@ -205,6 +220,7 @@ export default function PedidoFormPage() {
                   </Form.Group>
                 </Row>
 
+                {/* Campo de total com valor calculado automaticamente */}
                 <Row className='mb-2'>
                   <Form.Group as={Col}>
                     <Form.Label>Total:</Form.Label>
@@ -230,17 +246,18 @@ export default function PedidoFormPage() {
                       isInvalid={touched.status && errors.status}
                     >
                       <option value="">Selecione...</option>
-                      <option value="Pendente">Pendente</option>
-                      <option value="Em andamento">Em andamento</option>
                       <option value="Concluído">Concluído</option>
+                      <option value="Pendente">Pendente</option>
+                      <option value="Em Andamento">Em Andamento</option>
                     </Form.Select>
                     <Form.Control.Feedback type='invalid'>{errors.status}</Form.Control.Feedback>
                   </Form.Group>
                 </Row>
 
+                {/* Botão para submeter o formulário */}
                 <div className="text-center mt-3">
-                  <Button type="submit" style={styles.submitButton}>
-                    {pedidoId ? 'Editar' : 'Cadastrar'} Pedido
+                  <Button variant="primary" type="submit">
+                    {pedidoId ? 'Atualizar' : 'Salvar'}
                   </Button>
                 </div>
               </Form>
@@ -249,32 +266,22 @@ export default function PedidoFormPage() {
         </Card>
       </Container>
     </Pagina>
-  ); 
+  );
 }
+
+// Estilos personalizados aplicados diretamente no componente
 const styles = {
-  container: { 
-    backgroundColor: '#e9f3fb',
-    paddingTop: '20px',
-    paddingBottom: '40px',
-    minHeight: '100vh',
+  container: {
+    backgroundColor: '#d1e7dd', // Define o fundo da página como verde claro
+    padding: '20px'
   },
   card: {
-    maxWidth: '1000px', // Aumenta a largura do card
-    width: '100%', 
-    padding: '30px', // Ajusta o padding interno do card
-    borderRadius: '10px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    backgroundColor: '#f8f9fa',
-    },
+    padding: '20px',
+    backgroundColor: '#f7f7f7', // Define o fundo do card como cinza claro
+    maxWidth: '600px'
+  },
   title: {
     textAlign: 'center',
-    marginBottom: '20px',
-    color: '#007bff',
-  },
-  submitButton: {
-    display: 'block',
-    margin: '0 auto',
-    marginTop: '20px',
-    padding: '10px 30px',
-  },
+    marginBottom: '20px'
+  }
 };
